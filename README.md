@@ -118,6 +118,17 @@ npm run dev
 ```
 Acceder a la aplicación web en `http://localhost:5173`.
 
+### Paso 4: Ejecutar Pruebas Unitarias y Script del Módulo 2 (Semana 1)
+
+```bash
+# Desde la raíz del proyecto (Windows PowerShell)
+$env:PYTHONPATH="backend"
+.\backend\venv\Scripts\pytest.exe backend/tests -v
+
+# Ejecutar los 3 escenarios del Módulo 2 por consola
+.\backend\venv\Scripts\python.exe -m app.modules.modulo2_s1
+```
+
 ---
 
 ## 4. Verificación de Persistencia y Pruebas

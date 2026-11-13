@@ -1,0 +1,201 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{array}
+
+\geometry{margin=2.2cm}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!60!black,
+    urlcolor=blue!70!black
+}
+
+\title{\textbf{SIMTELE-RISK: Avance Semana 1} \\
+\large Modelos Matemáticos, Teoría de Errores Transversal y Sistemas Lineales}
+\author{Proyecto Integrador — Métodos Numéricos \\
+Contexto académico: Sistema de transporte por cable inspirado en \textit{Mi Teleférico} (La Paz, Bolivia)}
+\date{Noviembre 2026}
+
+\begin{document}
+\maketitle
+
+\begin{quote}
+\textbf{Nota Académica:} Todos los modelos, parámetros físicos, matrices y series de datos son estrictamente sintéticos con fines educativos y no representan fallas ni mediciones reales de operación.
+\end{quote}
+
+\tableofcontents
+\newpage
+
+\section{Planteamiento Formal de los 4 Modelos Matemáticos}
+
+\subsection{Módulo 1: Detención de Emergencia de Cabinas (\texttt{MOD1\_DETENCION})}
+\begin{itemize}
+    \item \textbf{Variables y unidades:} $t$ tiempo desde la activación del freno $[\text{s}]$; $x(t)$ distancia recorrida $[\text{m}]$; $v(t)$ velocidad lineal $[\text{m/s}]$; $a_0$ desaceleración nominal $[\text{m/s}^2]$; $k_d$ coeficiente de arrastre/pendiente $[\text{s}^{-1}]$.
+    \item \textbf{Sistema de EDO:}
+    \[
+        \frac{dx}{dt} = v(t), \qquad \frac{dv}{dt} = -a(v,t) = -(a_0 + k_d v(t))
+    \]
+    \item \textbf{Condiciones iniciales e hipótesis:} $x(0)=x_0=0\text{ m}$, $v(0)=v_0 > 0\text{ m/s}$. Movimiento unidimensional sobre el cable, masa efectiva constante y sin deslizamiento de pinza.
+    \item \textbf{Solución analítica de referencia ($k_d = 0$):}
+    \[
+        v(t) = v_0 - a_0 t, \qquad t_{\text{det}} = \frac{v_0}{a_0}, \qquad x_{\text{det}} = \frac{v_0^2}{2a_0}
+    \]
+    \item \textbf{Escenarios ($1\times 3$):} \textbf{NORMAL} ($v_0=6.0$, $a_0=1.2$, $k_d=0$, $h=0.05$); \textbf{ESTRÉS} ($v_0=8.5$, $a_0=0.75$, $k_d=0.02$, $h=0.4$); \textbf{MAL CONDICIONADO} (frenado asintótico con raíz múltiple $v(t_{\text{det}})=0$ y $v'(t_{\text{det}})=0$).
+\end{itemize}
+
+\subsection{Módulo 2: Deterioro Mecánico y Mantenimiento (\texttt{MOD2\_DETERIORO})}
+\begin{itemize}
+    \item \textbf{Variables y unidades:} $\mathbf{x} \in \mathbb{R}^n$ vector de parámetros calibrados de rigidez/desgaste por tramo; $A \in \mathbb{R}^{n\times n}$ matriz Simétrica Definida Positiva (SPD) de acoplamiento; $\mathbf{b} \in \mathbb{R}^n$ vector de lecturas acumuladas; $D(t) \in [0,1]$ índice de desgaste normalizado; $D_{\text{umbral}}$ umbral crítico de inspección.
+    \item \textbf{Ecuaciones:}
+    \[
+        A\mathbf{x} = \mathbf{b}, \qquad D(t) = D_0 + \alpha t + \beta t^2, \qquad D(t^*) - D_{\text{umbral}} = 0
+    \]
+    \item \textbf{Condiciones iniciales e hipótesis:} $D(0)=D_0 < D_{\text{umbral}}$, $\alpha,\beta > 0$, $A = A^T$ con $\lambda_{\min}(A) > 0$.
+    \item \textbf{Escenarios ($1\times 3$):} \textbf{NORMAL} ($n=4$ SPD diagonalmente dominante, $\kappa_2(A)<10$, $\text{tol}=10^{-8}$); \textbf{ESTRÉS} ($n=12$ SPD, $\text{tol}=10^{-11}$, $\text{max\_iter}=2000$); \textbf{MAL CONDICIONADO} (matriz tipo Hilbert perturbada $n=6$, $\kappa_2(A)>10^5$, perturbación $\frac{\|\delta\mathbf{b}\|_2}{\|\mathbf{b}\|_2}=10^{-4}$).
+\end{itemize}
+
+\subsection{Módulo 3: Oscilaciones por Viento (\texttt{MOD3\_OSCILACIONES})}
+\begin{itemize}
+    \item \textbf{Variables y unidades:} $x(t)$ desplazamiento lateral $[\text{m}]$; $v(t)=\dot{x}(t)$ velocidad lateral $[\text{m/s}]$; $m$ masa efectiva $[\text{kg}]$; $c$ amortiguamiento $[\text{N}\cdot\text{s/m}]$; $k$ rigidez $[\text{N/m}]$; $F(t)=F_0\sin(\omega t)$ fuerza de ráfaga $[\text{N}]$.
+    \item \textbf{Ecuación diferencial:}
+    \[
+        m\ddot{x} + c\dot{x} + kx = F(t) \quad \Longleftrightarrow \quad
+        \begin{cases}
+            \dot{x} = v \\
+            \dot{v} = \dfrac{1}{m}\big(F(t) - cv - kx\big)
+        \end{cases}
+    \]
+    \item \textbf{Condiciones iniciales y referencia ($F(t)=0$, $\zeta<1$):} $x(0)=x_0$, $v(0)=v_0$; régimen lineal elástico:
+    \[
+        x(t) = e^{-\zeta\omega_0 t}\big[C_1\cos(\omega_d t) + C_2\sin(\omega_d t)\big], \quad \omega_0 = \sqrt{\frac{k}{m}}, \quad \zeta = \frac{c}{2\sqrt{mk}}
+    \]
+    \item \textbf{Escenarios ($1\times 3$):} \textbf{NORMAL} (brisa moderada $h=0.02\text{ s}$); \textbf{ESTRÉS} (ráfagas cercanas a resonancia $\omega=1.55\text{ rad/s}$, $T=120\text{ s}$); \textbf{MAL CONDICIONADO} (sistema rígido \textit{stiff} con $k=450000\text{ N/m}$ y paso crítico $h=0.12\text{ s}$).
+\end{itemize}
+
+\subsection{Módulo 4: Reconstrucción de Señales de Sensores (\texttt{MOD4\_SENSORES})}
+\begin{itemize}
+    \item \textbf{Variables y unidades:} $t_i \in [a,b]$ instantes de muestreo $[\text{s}]$; $y_i = y(t_i)+\eta_i$ telemetría con ruido $\eta_i \sim \mathcal{N}(0,\sigma^2)$; $P(t)$ interpolante o spline cúbico natural.
+    \item \textbf{Ecuaciones:} Reconstrucción $P(t_j)\approx y(t_j)$ en índices ocultos y detección de cruce $P(t^*)-y_{\text{umbral}}=0$.
+    \item \textbf{Escenarios ($1\times 3$):} \textbf{NORMAL} ($y(t)=\sin(t)$ en $[0,2\pi]$, 8 nodos); \textbf{ESTRÉS} ($y(t)=e^{-t}\cos(2t)$ con $\sigma=0.04$, 12 nodos); \textbf{MAL CONDICIONADO} (función de Runge $f(t)=\frac{1}{1+25t^2}$ en $[-5,5]$ con 15 nodos equiespaciados).
+\end{itemize}
+
+\section{Teoría de Errores Transversal}
+En todos los módulos se calculan sistemáticamente en precisión \texttt{float64}:
+\[
+    E_{\text{abs}} = |v_{\text{ref}} - v_{\text{aprox}}|, \qquad
+    E_{\text{rel}} = \frac{|v_{\text{ref}} - v_{\text{aprox}}|}{\max(|v_{\text{ref}}|, 10^{-15})}, \qquad
+    E_{\%} = E_{\text{rel}} \times 100\%
+\]
+Para sistemas lineales se evalúan además la norma del residual $\|\mathbf{r}\|_2 = \|\mathbf{b} - A\mathbf{x}\|_2$, el número de condición espectral $\kappa_2(A) = \|A\|_2 \|A^{-1}\|_2$ y el factor de amplificación ante perturbación $\delta\mathbf{b}$:
+\[
+    \text{Factor de amplificación} = \frac{\|\delta\mathbf{x}\|_2 / \|\mathbf{x}\|_2}{\|\delta\mathbf{b}\|_2 / \|\mathbf{b}\|_2}
+\]
+
+\section{Ejemplo Numérico Resuelto Paso a Paso (Jacobi y Gauss-Seidel)}
+Para el escenario \textbf{NORMAL} del Módulo 2 ($n=4$):
+\[
+A = \begin{pmatrix}
+10 & -1.5 & 0 & 0 \\
+-1.5 & 10 & -1.5 & 0 \\
+0 & -1.5 & 10 & -1.5 \\
+0 & 0 & -1.5 & 10
+\end{pmatrix}, \qquad
+\mathbf{b} = \begin{pmatrix} 10.725 \\ 5.875 \\ 3.775 \\ 2.175 \end{pmatrix}, \qquad
+\mathbf{x}^* = \begin{pmatrix} 1.20 \\ 0.85 \\ 0.55 \\ 0.30 \end{pmatrix}
+\]
+Partiendo de $\mathbf{x}^{(0)} = [0,\, 0,\, 0,\, 0]^T$:
+
+\subsection{Método de Jacobi ($x_i^{(k+1)} = \frac{1}{a_{ii}}(b_i - \sum_{j\ne i} a_{ij}x_j^{(k)})$)}
+\begin{itemize}
+    \item \textbf{Iteración 1:}
+    $x_1^{(1)} = \frac{10.725}{10} = 1.072500$, \;
+    $x_2^{(1)} = \frac{5.875}{10} = 0.587500$, \;
+    $x_3^{(1)} = \frac{3.775}{10} = 0.377500$, \;
+    $x_4^{(1)} = \frac{2.175}{10} = 0.217500$.
+    \item \textbf{Iteración 2:}
+    \begin{align*}
+        x_1^{(2)} &= \frac{10.725 + 1.5(0.5875)}{10} = 1.160625, &
+        x_2^{(2)} &= \frac{5.875 + 1.5(1.0725 + 0.3775)}{10} = 0.805000, \\
+        x_3^{(2)} &= \frac{3.775 + 1.5(0.5875 + 0.2175)}{10} = 0.498250, &
+        x_4^{(2)} &= \frac{2.175 + 1.5(0.3775)}{10} = 0.274125.
+    \end{align*}
+\end{itemize}
+
+\subsection{Método de Gauss-Seidel ($x_i^{(k+1)} = \frac{1}{a_{ii}}(b_i - \sum_{j<i} a_{ij}x_j^{(k+1)} - \sum_{j>i} a_{ij}x_j^{(k)})$)}
+\begin{itemize}
+    \item \textbf{Iteración 1:}
+    \begin{align*}
+        x_1^{(1)} &= \frac{10.725}{10} = 1.072500, &
+        x_2^{(1)} &= \frac{5.875 + 1.5(1.0725)}{10} = 0.748375, \\
+        x_3^{(1)} &= \frac{3.775 + 1.5(0.748375)}{10} = 0.489756, &
+        x_4^{(1)} &= \frac{2.175 + 1.5(0.48975625)}{10} = 0.290963.
+    \end{align*}
+    \item \textbf{Iteración 2:}
+    \begin{align*}
+        x_1^{(2)} &= \frac{10.725 + 1.5(0.748375)}{10} = 1.184756, &
+        x_2^{(2)} &= \frac{5.875 + 1.5(1.184756 + 0.489756)}{10} = 0.838677, \\
+        x_3^{(2)} &= \frac{3.775 + 1.5(0.838677 + 0.290963)}{10} = 0.546946, &
+        x_4^{(2)} &= \frac{2.175 + 1.5(0.546946)}{10} = 0.299542.
+    \end{align*}
+\end{itemize}
+
+\section{Resultados y Tablas de Error del Módulo 2}
+
+\subsection{Escenario NORMAL ($n=4$, $\text{tol}=10^{-8}$, $\kappa_2(A)=1.6410$, Amplificación $=0.80\times$)}
+\begin{table}[h!]
+\centering
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Método} & \textbf{Conv.} & \textbf{Iter.} & \textbf{Tiempo (ms)} & \textbf{Residual} & $E_{\text{rel}}$ & $E_{\%}$ \\
+\midrule
+Jacobi & Sí & 15 & 0.7773 & $6.434\times 10^{-9}$ & $5.262\times 10^{-10}$ & $5.262\times 10^{-8}\%$ \\
+Gauss-Seidel & Sí & 9 & 0.5429 & $7.430\times 10^{-10}$ & $5.174\times 10^{-11}$ & $5.174\times 10^{-9}\%$ \\
+LU (Pivoteo Parcial) & Sí & 1 & 0.0962 & $1.776\times 10^{-15}$ & $0.000\times 10^{0}$ & $0.000\%$ \\
+Gradiente Conjugado & Sí & 4 & 0.2258 & $3.972\times 10^{-15}$ & $1.701\times 10^{-16}$ & $1.701\times 10^{-14}\%$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Escenario ESTRÉS ($n=12$, $\text{tol}=10^{-11}$, $\kappa_2(A)=2.0764$, Amplificación $=0.68\times$)}
+\begin{table}[h!]
+\centering
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Método} & \textbf{Conv.} & \textbf{Iter.} & \textbf{Tiempo (ms)} & \textbf{Residual} & $E_{\text{rel}}$ & $E_{\%}$ \\
+\midrule
+Jacobi & Sí & 31 & 1.1609 & $4.501\times 10^{-12}$ & $3.561\times 10^{-13}$ & $3.561\times 10^{-11}\%$ \\
+Gauss-Seidel & Sí & 18 & 0.8615 & $4.878\times 10^{-12}$ & $3.252\times 10^{-13}$ & $3.252\times 10^{-11}\%$ \\
+LU (Pivoteo Parcial) & Sí & 1 & 0.1711 & $1.538\times 10^{-15}$ & $7.090\times 10^{-17}$ & $7.090\times 10^{-15}\%$ \\
+Gradiente Conjugado & Sí & 12 & 0.3384 & $3.408\times 10^{-14}$ & $1.307\times 10^{-15}$ & $1.307\times 10^{-13}\%$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Escenario MAL CONDICIONADO ($n=6$ Hilbert, $\text{tol}=10^{-8}$, $\kappa_2(A)=1.4937\times 10^7$, Amplificación $=7\,031\,425.91\times$)}
+\begin{table}[h!]
+\centering
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Método} & \textbf{Conv.} & \textbf{Iter.} & \textbf{Tiempo (ms)} & \textbf{Residual} & $E_{\text{rel}}$ & $E_{\%}$ \\
+\midrule
+Jacobi & No & 158 & 4.1100 & $3.514\times 10^{100}$ & $2.135\times 10^{100}$ & Divergió \\
+Gauss-Seidel & No & 5000 & 147.2676 & $1.263\times 10^{-7}$ & $5.218\times 10^{-3}$ & $5.218\times 10^{-1}\%$ \\
+LU (Pivoteo Parcial) & Sí & 1 & 0.1662 & $2.544\times 10^{-16}$ & $1.677\times 10^{-10}$ & $1.677\times 10^{-8}\%$ \\
+Gradiente Conjugado & Sí & 6 & 0.2291 & $1.452\times 10^{-10}$ & $8.619\times 10^{-4}$ & $8.619\times 10^{-2}\%$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Análisis:} En el escenario \textbf{MAL CONDICIONADO}, Jacobi falla por divergencia iterativa ($\rho(T_J)>1$), mientras que LU y CG obtienen residuales pequeños ($10^{-16}$ y $10^{-10}$). No obstante, debido a $\kappa_2(A) \approx 1.49\times 10^7$, una perturbación de $10^{-4}$ en $\mathbf{b}$ se amplifica en más de $7\times 10^6$ veces en $\mathbf{x}$, diferenciando claramente el mal condicionamiento estructural de $A$ del fallo de convergencia de un algoritmo iterativo.
+
+\section{Arquitectura de Persistencia (DER Inicial)}
+La base de datos PostgreSQL (\texttt{database/schema.sql}), orquestada mediante Docker Compose (\texttt{docker-compose.yml}), implementa seis entidades relacionadas: \texttt{caso\_estudio} ($1:N$) \texttt{escenario} ($1:N$) \texttt{simulacion} ($1:N$) \texttt{ejecucion\_metodo}, la cual se desglosa en \texttt{iteracion\_resultado} ($1:N$) y \texttt{resultado\_resumen} ($1:1$). El esquema precarga los 4 módulos y los 12 escenarios base ($4\times 3$).
+
+\end{document}

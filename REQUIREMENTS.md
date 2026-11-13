@@ -31,8 +31,8 @@
 | `POSTGRES_USER` | `postgres` | Usuario administrador de PostgreSQL |
 | `POSTGRES_PASSWORD` | `simtele_pass` | Contraseña de conexión |
 | `POSTGRES_DB` | `simtele_risk` | Nombre de la base de datos |
-| `POSTGRES_PORT` | `5432` | Puerto expuesto en el host |
-| `DATABASE_URL` | `postgresql://postgres:simtele_pass@localhost:5432/simtele_risk` | Cadena de conexión para el Backend |
+| `POSTGRES_PORT` | `5433` | Puerto expuesto en el host (evita conflicto con PostgreSQL local en 5432) |
+| `DATABASE_URL` | `postgresql+psycopg2://postgres:simtele_pass@localhost:5433/simtele_risk` | Cadena de conexión para el Backend |
 
 ---
 

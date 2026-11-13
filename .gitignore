@@ -19,3 +19,12 @@ build/
 .vscode/
 .idea/
 *.log
+*.db
+
+# LaTeX build artifacts
+*.aux
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz

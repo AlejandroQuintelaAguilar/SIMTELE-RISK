@@ -54,34 +54,41 @@ docker compose down -v
 
 ---
 
-## 3. Ejecutar el Backend (Pendiente — Próximos Pasos)
+## 3. Ejecutar el Backend (Semana 1 — Activo)
 
-*Esta sección se completará al implementar la carpeta `/backend` (FastAPI + Motor Numérico).*
+```powershell
+cd backend
+python -m venv venv
+.\venv\Scripts\activate
+pip install -r requirements.txt
 
-```bash
-# Referencia prevista:
-# cd backend
-# python -m venv venv
-# venv\Scripts\activate   (Windows) | source venv/bin/activate (Linux/Mac)
-# pip install -r requirements.txt
-# uvicorn app.main:app --reload --port 8000
+# Iniciar servidor FastAPI (usa PostgreSQL si está activo, o respaldo SQLite automático)
+uvicorn app.main:app --reload --port 8000
 ```
+
+La documentación interactiva de la API estará disponible en `http://localhost:8000/docs`.
 
 ---
 
-## 4. Ejecutar el Frontend (Pendiente — Próximos Pasos)
+## 4. Ejecutar el Frontend (Semana 1 — Activo)
 
-*Esta sección se completará al implementar la carpeta `/frontend`.*
-
-```bash
-# Referencia prevista:
-# cd frontend
-# npm install
-# npm run dev
+```powershell
+cd frontend
+npm install
+npm run dev
 ```
+
+Acceder a la interfaz web en `http://localhost:5173`.
 
 ---
 
-## 5. Verificación y Pruebas (Pendiente — Próximos Pasos)
+## 5. Verificación y Pruebas (Semana 1 — Activo)
 
-*Aquí se documentarán los comandos de `pytest` y las pruebas de persistencia extremo a extremo.*
+```powershell
+# Desde la raíz del proyecto
+$env:PYTHONPATH="backend"
+.\backend\venv\Scripts\pytest.exe backend/tests -v
+
+# Ejecutar el comparativo de los 3 escenarios del Módulo 2 por consola
+.\backend\venv\Scripts\python.exe -m app.modules.modulo2_s1
+```
