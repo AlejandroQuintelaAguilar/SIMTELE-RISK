@@ -82,13 +82,19 @@ Acceder a la interfaz web en `http://localhost:5173`.
 
 ---
 
-## 5. Verificación y Pruebas (Semana 1 — Activo)
+## 5. Verificación y Pruebas (Semanas 1 y 2 — Activo)
 
 ```powershell
-# Desde la raíz del proyecto
+# Desde la raíz del proyecto (ejecuta las 25 pruebas unitarias y de integración/persistencia)
 $env:PYTHONPATH="backend"
 .\backend\venv\Scripts\pytest.exe backend/tests -v
 
-# Ejecutar el comparativo de los 3 escenarios del Módulo 2 por consola
-.\backend\venv\Scripts\python.exe -m app.modules.modulo2_s1
+# Compilar Frontend (TypeScript + Vite)
+cd frontend
+npm run build
 ```
+
+### Flujo de Verificación de Persistencia en la Interfaz Web
+1. Abre `http://localhost:5173` y selecciona cualquiera de los 4 módulos (`MOD1_DETENCION`, `MOD2_DETERIORO`, `MOD3_OSCILACIONES`, `MOD4_SENSORES`).
+2. Elige un escenario (`NORMAL`, `ESTRÉS` o `MAL_CONDICIONADO`), ajusta parámetros si deseas y pulsa **Ejecutar y Guardar Simulación**.
+3. Ve a la pestaña **Historial**, selecciona la corrida guardada con **Recuperar** o **Relanzar** para comprobar la persistencia y coincidencia exacta.

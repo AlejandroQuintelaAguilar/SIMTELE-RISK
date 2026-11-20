@@ -1,0 +1,130 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{geometry}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{array}
+
+\geometry{margin=2.1cm}
+
+\title{\textbf{SIMTELE-RISK: Avance Semana 2} \\
+\large Integración Matemática Completa, Aplicación Web, Persistencia y Reporte de Experimentos}
+\author{Proyecto Integrador — Métodos Numéricos \\
+Repositorio: \url{https://github.com/AlejandroQuintelaAguilar/SIMTELE-RISK.git}}
+\date{Noviembre 2026}
+
+\begin{document}
+\maketitle
+
+\begin{quote}
+\textbf{Contexto Académico:} Todos los modelos, parámetros físicos y datos simulados corresponden a escenarios sintéticos educativos inspirados en \textit{Mi Teleférico} (La Paz, Bolivia), sin conexión ni representatividad de fallas reales.
+\end{quote}
+
+\tableofcontents
+\newpage
+
+\section{Resumen de Implementación de la Semana 2}
+Durante la Semana 2 se integraron las cuatro familias restantes de métodos numéricos en precisión \texttt{float64}, implementadas desde cero en \texttt{backend/app/numerical/}:
+\begin{enumerate}
+    \item \textbf{Raíces (\texttt{roots.py}):} Bisección, Newton-Raphson y Secante, con registro de intervalo/semillas, residual $|f(x_k)|$ y errores frente a solución analítica o de referencia.
+    \item \textbf{Interpolación (\texttt{interpolation.py}):} Lagrange, Newton por diferencias divididas (evaluación Horner) y Splines Cúbicos Naturales (sistema tridiagonal resuelto mediante el algoritmo de Thomas).
+    \item \textbf{Integración (\texttt{integration.py}):} Trapecio compuesto, Simpson 1/3 compuesto y Romberg (extrapolación de Richardson $R_{i,j}$) con tablas de refinamiento de malla.
+    \item \textbf{EDO (\texttt{ode.py}):} Runge-Kutta de 2.º orden (variante declarada: \textbf{Heun / Euler Mejorado}) y Runge-Kutta clásico de 4.º orden (\textbf{RK4}), con detección de desbordamiento/inestabilidad numérica.
+\end{enumerate}
+
+Adicionalmente, se habilitó la persistencia completa en PostgreSQL/SQLite (\texttt{simulacion}, \texttt{ejecucion\_metodo}, \texttt{iteracion\_resultado}, \texttt{resultado\_resumen}), la API REST unificada para los 4 módulos y la interfaz web con los 4 módulos activos, parámetros editables, 2 gráficos comparativos por módulo y la pestaña \textbf{Historial} con recuperación y relanzamiento verificable.
+
+\section{Resultados Experimentales por Módulo ($4 \times 3$ Escenarios)}
+
+\subsection{Módulo 1: Detención de Emergencia de Cabinas (\texttt{MOD1\_DETENCION})}
+Combina EDO (RK2, RK4), integración de velocidad $v(t)$ (Trapecio, Simpson 1/3, Romberg) y búsqueda de instante de detención $v(t_{\text{det}})=0$ (Bisección, Newton-Raphson, Secante).
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{llcccc}
+\toprule
+\textbf{Escenario} & \textbf{Método} & \textbf{Conv.} & \textbf{Iter./Pasos} & \textbf{Valor Calculado} & \textbf{Error Abs.} \\
+\midrule
+NORMAL & RK2 (Heun) & Sí & 100 & $x_{\text{det}}=15.000000\text{ m}$ & $4.267\times 10^{-14}$ \\
+($t_{\text{ref}}=5.0\text{ s}$) & RK4 (Clásico) & Sí & 100 & $x_{\text{det}}=15.000000\text{ m}$ & $4.089\times 10^{-14}$ \\
+($x_{\text{ref}}=15.0\text{ m}$) & Simpson 1/3 & Sí & 5 & $15.00000000\text{ m}$ & $0.000\times 10^{0}$ \\
+ & Newton-Raphson & Sí & 1 & $t_{\text{det}}=5.00000000\text{ s}$ & $0.000\times 10^{0}$ \\
+\midrule
+ESTRÉS & RK2 (Heun) & Sí & 26 & $x_{\text{det}}=41.932582\text{ m}$ & $4.050\times 10^{-3}$ \\
+($h=0.4\text{ s}$) & RK4 (Clásico) & Sí & 26 & $x_{\text{det}}=41.936631\text{ m}$ & $1.291\times 10^{-8}$ \\
+($x_{\text{ref}}=41.936631\text{ m}$) & Romberg & Sí & 5 & $41.93663091\text{ m}$ & $2.842\times 10^{-14}$ \\
+ & Newton-Raphson & Sí & 4 & $t_{\text{det}}=10.21502318\text{ s}$ & $1.776\times 10^{-15}$ \\
+\midrule
+MAL COND. & Bisección & No & 0 & Sin cambio de signo & N/A \\
+(Raíz doble & Newton-Raphson & Sí & 21 & $t_{\text{det}}=4.99999857\text{ s}$ & $1.431\times 10^{-6}$ \\
+$v=v'=0$) & Secante & Sí & 29 & $t_{\text{det}}=4.99999816\text{ s}$ & $1.836\times 10^{-6}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Módulo 2: Deterioro Mecánico y Mantenimiento (\texttt{MOD2\_DETERIORO})}
+Integra los 4 solvers lineales SPD de la Semana 1 con la búsqueda de raíces de $D(t)-D_{\text{umbral}}=0$ (referencia analítica cuadrática: $t^*=21.25\text{ meses}$ en \texttt{NORMAL} y $t^*=11.869123\text{ meses}$ en \texttt{ESTRÉS}). En todos los escenarios, Newton-Raphson converge en 4--5 iteraciones con error $\le 8.68\times 10^{-10}$, mientras que en \texttt{MAL\_CONDICIONADO} ($\kappa_2(A)=1.494\times 10^7$) la amplificación de perturbación lineal es $7\,031\,425.91\times$.
+
+\subsection{Módulo 3: Oscilaciones por Viento (\texttt{MOD3\_OSCILACIONES})}
+Resuelve $m\ddot{x}+c\dot{x}+kx=F_0\sin(\omega t)$ con RK2/RK4 e integra $\int_0^T x(t)^2\,dt$.
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{llcccc}
+\toprule
+\textbf{Escenario} & \textbf{Método} & \textbf{Conv.} & \textbf{Pasos} & \textbf{Resultado} & \textbf{Error Abs.} \\
+\midrule
+NORMAL & RK2 (Heun) & Sí & 1000 & $\text{amp}_{\max}=0.085237\text{ m}$ & $4.374\times 10^{-6}$ \\
+ & RK4 (Clásico) & Sí & 1000 & $\text{amp}_{\max}=0.085261\text{ m}$ & $2.314\times 10^{-10}$ \\
+ & Romberg ($\int x^2 dt$) & Sí & 9 & $0.044639\text{ m}^2\cdot\text{s}$ & $6.012\times 10^{-11}$ \\
+\midrule
+ESTRÉS & RK2 (Heun) & Sí & 2400 & $\text{amp}_{\max}=2.797661\text{ m}$ & $5.501\times 10^{-2}$ \\
+($T=120\text{ s}$) & RK4 (Clásico) & Sí & 2400 & $\text{amp}_{\max}=2.815471\text{ m}$ & $1.716\times 10^{-5}$ \\
+\midrule
+MAL COND. & RK2 (Heun) & No & 15 & $\text{amp}_{\max}=1.678\times 10^{5}\text{ m}$ & $4.753\times 10^{5}$ \\
+(Sistema \textit{stiff}) & RK4 (Clásico) & Sí & 84 & $\text{amp}_{\max}=0.050000\text{ m}$ & $2.284\times 10^{-5}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Módulo 4: Reconstrucción de Señales de Sensores (\texttt{MOD4\_SENSORES})}
+Evalúa Lagrange, Newton (Diferencias Divididas) y Splines Cúbicos Naturales sobre nodos ocultados, además de detectar el primer cruce de umbral $S(t)-y_{\text{umbral}}=0$.
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{llcccc}
+\toprule
+\textbf{Escenario} & \textbf{Método} & \textbf{Nodos Visibles} & \textbf{RMSE Ocultos} & \textbf{Error Máx.} & \textbf{Error Rel.} \\
+\midrule
+NORMAL & Lagrange / Newton & 6 & $8.822\times 10^{-3}$ & $8.822\times 10^{-3}$ & $9.049\times 10^{-3}$ \\
+($\sin(t)$) & Splines Cúbicos & 6 & $4.154\times 10^{-2}$ & $4.154\times 10^{-2}$ & $4.260\times 10^{-2}$ \\
+\midrule
+ESTRÉS & Lagrange / Newton & 8 & $1.145\times 10^{-1}$ & $1.647\times 10^{-1}$ & $8.243\times 10^{-1}$ \\
+(Ruido $\sigma=0.04$) & Splines Cúbicos & 8 & $1.145\times 10^{-1}$ & $1.545\times 10^{-1}$ & $8.245\times 10^{-1}$ \\
+\midrule
+MAL COND. & Lagrange / Newton & 13 & $\mathbf{1.092\times 10^{2}}$ & $\mathbf{1.092\times 10^{2}}$ & $5.026\times 10^{4}$ \\
+(Runge $n=15$) & Splines Cúbicos & 13 & $\mathbf{1.773\times 10^{-3}}$ & $\mathbf{1.773\times 10^{-3}}$ & $8.160\times 10^{-1}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Fallos Detectados, Diagnóstico y Correcciones}
+Durante las pruebas experimentales y la suite automatizada (\texttt{pytest}, 25/25 pruebas aprobadas) se detectaron y documentaron los siguientes comportamientos críticos:
+\begin{enumerate}
+    \item \textbf{Raíz múltiple en Módulo 1 (\texttt{MAL\_CONDICIONADO}):} Al ser $v(t_{\text{det}})=0$ y $v'(t_{\text{det}})=0$, $v(t)\ge 0$ no cambia de signo, por lo que Bisección falla de forma controlada y Newton-Raphson degrada de orden cuadrático a lineal (21 iteraciones en lugar de 1--4).
+    \item \textbf{Umbral de inestabilidad explícita en RK2 (\texttt{ode.py}):} Con un umbral inicial de desbordamiento en $10^{50}$, RK2 en el sistema rígido del Módulo 3 ($h\omega_0 \approx 2.32$) alcanzaba $6.5\times 10^{34}\text{ m}$ antes de finalizar los 84 pasos. Se redujo el límite de estabilidad física/numérica a $10^6$, permitiendo detectar y detener la divergencia de RK2 en el paso 15 (\texttt{convergio=False}), contrastando con la estabilidad de RK4 en el mismo paso $h=0.12\text{ s}$.
+    \item \textbf{Convergencia de Romberg en integrandos oscilatorios:} Con 6 niveles ($n=32$ subintervalos), Romberg no alcanzaba tolerancia sobre la ventana larga $T=120\text{ s}$ del Módulo 3; al ampliar el límite a 9 niveles, converge con precisión de $6\times 10^{-11}$ en \texttt{NORMAL}.
+    \item \textbf{Fenómeno de Runge en Módulo 4:} La interpolación polinomial global de grado 12 sobre nodos equiespaciados amplificó el error en los extremos ocultos hasta $109.22$, mientras que Splines Cúbicos Naturales mantuvieron el RMSE en $1.77\times 10^{-3}$.
+    \item \textbf{Serialización JSONB estricta en PostgreSQL:} Valores \texttt{NaN}/\texttt{Inf} de ejecuciones divergentes rompían la inserción JSONB; se añadió saneamiento automático (\texttt{sanitize\_json}) antes de persistir.
+    \item \textbf{Prueba de Persistencia y Relanzamiento:} La prueba \texttt{test\_persistence\_save\_retrieve\_and\_rerun} ejecutó, guardó, recuperó por ID y relanzó la simulación comprobando $\Delta_{\max} = 0.0 \le 10^{-12}$.
+\end{enumerate}
+
+\end{document}

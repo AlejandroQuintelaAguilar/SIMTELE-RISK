@@ -1,10 +1,11 @@
-"""Endpoints REST de la Semana 1 para SIMTELE-RISK."""
+"""Endpoints REST de SIMTELE-RISK (Semanas 1 y 2)."""
 
 from __future__ import annotations
 
 from dataclasses import asdict
+from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, selectinload
 
 from app.core.config import settings
@@ -17,9 +18,19 @@ from app.models.schemas import (
     MethodResultOut,
     Modulo2ExecuteRequest,
     Modulo2ExecuteResponse,
+    ModuleRunRequest,
+    RerunResponseOut,
     SensitivityOut,
+    SimulacionListItemOut,
+    UnifiedModuleResponse,
 )
 from app.modules.modulo2_s1 import run_modulo2_scenario
+from app.services.persistence import (
+    execute_and_persist_simulation,
+    get_saved_simulation,
+    list_saved_simulations,
+    rerun_saved_simulation,
+)
 
 router = APIRouter(prefix="/api", tags=["SIMTELE-RISK"])
 
@@ -50,7 +61,7 @@ def listar_casos_estudio(db: Session = Depends(get_db)) -> list[CasoEstudioOut]:
 def ejecutar_modulo2_sistemas_lineales(
     payload: Modulo2ExecuteRequest,
 ) -> Modulo2ExecuteResponse:
-    """Ejecuta los 4 solvers lineales del Módulo 2 en el escenario seleccionado."""
+    """Ejecuta los 4 solvers lineales del Módulo 2 en el escenario seleccionado (Semana 1)."""
     try:
         report = run_modulo2_scenario(
             tipo=payload.escenario,
@@ -93,3 +104,63 @@ def ejecutar_modulo2_sistemas_lineales(
         interpretacion_numerica=report.interpretacion_numerica,
         interpretacion_problema=report.interpretacion_problema,
     )
+
+
+@router.post("/modulos/{caso_codigo}/ejecutar", response_model=UnifiedModuleResponse)
+def ejecutar_y_guardar_modulo(
+    caso_codigo: Literal["MOD1_DETENCION", "MOD2_DETERIORO", "MOD3_OSCILACIONES", "MOD4_SENSORES"],
+    payload: ModuleRunRequest,
+    db: Session = Depends(get_db),
+) -> UnifiedModuleResponse:
+    """Ejecuta cualquiera de los 4 módulos, persiste el experimento completo y retorna resultados y gráficos."""
+    try:
+        result = execute_and_persist_simulation(
+            db=db,
+            caso_codigo=caso_codigo,
+            escenario_tipo=payload.escenario,
+            parametros_override=payload.parametros_override,
+            usuario_equipo=payload.usuario_equipo,
+            notas_usuario=payload.notas_usuario,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return UnifiedModuleResponse.model_validate(result)
+
+
+@router.get("/simulaciones", response_model=list[SimulacionListItemOut])
+def listar_simulaciones(
+    caso_codigo: str | None = Query(default=None),
+    escenario: str | None = Query(default=None),
+    limit: int = Query(default=50, ge=1, le=200),
+    db: Session = Depends(get_db),
+) -> list[SimulacionListItemOut]:
+    """Lista simulaciones guardadas en base de datos para la vista Historial."""
+    items = list_saved_simulations(db, caso_codigo=caso_codigo, escenario_tipo=escenario, limit=limit)
+    return [SimulacionListItemOut.model_validate(it) for it in items]
+
+
+@router.get("/simulaciones/{simulacion_id}", response_model=UnifiedModuleResponse)
+def obtener_simulacion(
+    simulacion_id: int,
+    db: Session = Depends(get_db),
+) -> UnifiedModuleResponse:
+    """Recupera parámetros, métodos, iteraciones, gráficos e interpretaciones de una simulación guardada."""
+    try:
+        data = get_saved_simulation(db, simulacion_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return UnifiedModuleResponse.model_validate(data)
+
+
+@router.post("/simulaciones/{simulacion_id}/relanzar", response_model=RerunResponseOut)
+def relanzar_simulacion(
+    simulacion_id: int,
+    db: Session = Depends(get_db),
+) -> RerunResponseOut:
+    """Relanza una simulación guardada y verifica coincidencia numérica con la corrida original."""
+    try:
+        data = rerun_saved_simulation(db, simulacion_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return RerunResponseOut.model_validate(data)

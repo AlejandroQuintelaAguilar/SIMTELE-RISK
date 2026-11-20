@@ -1,11 +1,11 @@
-import type { CasoEstudio } from "../services/api";
+import type { CasoCodigo, CasoEstudio } from "../services/api";
 import { ModuleCard } from "../components/ModuleCard";
 
 interface HomePageProps {
   casos: CasoEstudio[];
   loading: boolean;
   error: string | null;
-  onSelectModulo2: () => void;
+  onOpenModule: (codigo: CasoCodigo) => void;
 }
 
 const FALLBACK_CASOS: CasoEstudio[] = [
@@ -13,7 +13,8 @@ const FALLBACK_CASOS: CasoEstudio[] = [
     id: 1,
     codigo: "MOD1_DETENCION",
     nombre: "Detención de Emergencia de Cabinas",
-    descripcion: "Modelado cinemático y dinámico de frenado de emergencia mediante EDO, integración de velocidad y búsqueda de instante de detención.",
+    descripcion:
+      "Modelado cinemático y dinámico de frenado de emergencia mediante EDO, integración de velocidad y búsqueda de instante de detención.",
     modelo_version: "v1.0",
     escenarios: [],
   },
@@ -21,7 +22,8 @@ const FALLBACK_CASOS: CasoEstudio[] = [
     id: 2,
     codigo: "MOD2_DETERIORO",
     nombre: "Deterioro Mecánico y Mantenimiento",
-    descripcion: "Calibración de modelo polinómico de desgaste mediante sistemas lineales SPD y predicción de tiempo a umbral crítico.",
+    descripcion:
+      "Calibración de modelo polinómico de desgaste mediante sistemas lineales SPD y predicción de tiempo a umbral crítico.",
     modelo_version: "v1.0",
     escenarios: [],
   },
@@ -29,7 +31,8 @@ const FALLBACK_CASOS: CasoEstudio[] = [
     id: 3,
     codigo: "MOD3_OSCILACIONES",
     nombre: "Oscilaciones por Viento",
-    descripcion: "Simulación de respuesta dinámica amortiguada ante ráfagas de viento e integración de energía acumulada.",
+    descripcion:
+      "Simulación de respuesta dinámica amortiguada ante ráfagas de viento e integración de energía acumulada.",
     modelo_version: "v1.0",
     escenarios: [],
   },
@@ -37,13 +40,14 @@ const FALLBACK_CASOS: CasoEstudio[] = [
     id: 4,
     codigo: "MOD4_SENSORES",
     nombre: "Reconstrucción de Señales de Sensores",
-    descripcion: "Interpolación de telemetría con datos ocultados, evaluación de ruido y detección de cruce de umbrales.",
+    descripcion:
+      "Interpolación de telemetría con datos ocultados, evaluación de ruido y detección de cruce de umbrales.",
     modelo_version: "v1.0",
     escenarios: [],
   },
 ];
 
-export function HomePage({ casos, loading, error, onSelectModulo2 }: HomePageProps) {
+export function HomePage({ casos, loading, error, onOpenModule }: HomePageProps) {
   const items = casos.length > 0 ? casos : FALLBACK_CASOS;
 
   return (
@@ -64,17 +68,13 @@ export function HomePage({ casos, loading, error, onSelectModulo2 }: HomePagePro
         <p style={{ color: "var(--muted)" }}>Cargando módulos de estudio...</p>
       ) : (
         <div className="grid-cards">
-          {items.map((caso) => {
-            const isMod2 = caso.codigo === "MOD2_DETERIORO";
-            return (
-              <ModuleCard
-                key={caso.codigo}
-                caso={caso}
-                isActive={isMod2}
-                onOpen={onSelectModulo2}
-              />
-            );
-          })}
+          {items.map((caso) => (
+            <ModuleCard
+              key={caso.codigo}
+              caso={caso}
+              onOpen={() => onOpenModule(caso.codigo)}
+            />
+          ))}
         </div>
       )}
     </section>

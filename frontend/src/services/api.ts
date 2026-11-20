@@ -1,8 +1,13 @@
 export type ScenarioType = "NORMAL" | "ESTRES" | "MAL_CONDICIONADO";
+export type CasoCodigo =
+  | "MOD1_DETENCION"
+  | "MOD2_DETERIORO"
+  | "MOD3_OSCILACIONES"
+  | "MOD4_SENSORES";
 
 export interface Escenario {
   id: number;
-  tipo: string;
+  tipo: ScenarioType;
   nombre_descriptivo: string;
   parametros_json: Record<string, unknown>;
   fuente_datos: string;
@@ -11,62 +16,89 @@ export interface Escenario {
 
 export interface CasoEstudio {
   id: number;
-  codigo: string;
+  codigo: CasoCodigo;
   nombre: string;
   descripcion: string;
   modelo_version: string;
   escenarios: Escenario[];
 }
 
-export interface IterationRecord {
-  numero: number;
+export interface ChartSeries {
+  name: string;
   x: number[];
-  residual: number;
-  residual_rel: number;
-  step_diff: number | null;
-  error_abs: number | null;
-  error_rel: number | null;
-  error_pct: number | null;
+  y: number[];
+  mode: "line" | "markers";
 }
 
-export interface MethodResult {
-  metodo: string;
+export interface ChartPayload {
+  id: string;
+  titulo: string;
+  x_label: string;
+  y_label: string;
+  y_scale: "linear" | "log";
+  series: ChartSeries[];
+}
+
+export interface UnifiedMethodResult {
   familia: string;
+  metodo: string;
   convergio: boolean;
   iteraciones_realizadas: number;
-  motivo_parada: string;
   tiempo_ms: number;
-  residual_final: number;
-  residual_rel_final: number;
+  valor_principal: number | null;
+  etiqueta_valor: string;
+  residual: number | null;
   error_abs: number | null;
   error_rel: number | null;
   error_pct: number | null;
-  x_aprox: number[];
-  diagnostics: Record<string, unknown>;
-  historial: IterationRecord[];
+  motivo_parada: string;
+  detalle_tabla: Record<string, unknown>[];
 }
 
-export interface SensitivityResult {
-  relative_perturbation_b: number;
-  relative_change_x: number;
-  amplification_factor: number;
-  condition_number_2: number;
-  delta_b_norm: number;
-  delta_x_norm: number;
-}
-
-export interface Modulo2ExecuteResponse {
+export interface UnifiedModuleResponse {
+  simulacion_id: number | null;
+  fecha: string | null;
+  estado: string | null;
+  usuario_equipo: string | null;
+  caso_codigo: CasoCodigo;
   escenario: ScenarioType;
   nombre_descriptivo: string;
-  dimension_n: number;
-  tol: number;
-  max_iter: number;
-  kappa_2: number;
-  x_referencia: number[];
-  sensibilidad: SensitivityResult;
-  resultados_metodos: MethodResult[];
+  parametros_usados: Record<string, unknown>;
+  referencia: Record<string, unknown>;
+  metodos: UnifiedMethodResult[];
+  graficos: ChartPayload[];
   interpretacion_numerica: string;
   interpretacion_problema: string;
+}
+
+export interface SimulacionListItem {
+  simulacion_id: number;
+  fecha: string;
+  usuario_equipo: string;
+  estado: string;
+  caso_codigo: CasoCodigo;
+  caso_nombre: string;
+  escenario: ScenarioType;
+  nombre_descriptivo: string;
+  parametros_usados: Record<string, unknown>;
+  total_metodos: number;
+  notas_usuario: string | null;
+}
+
+export interface RerunComparisonMethod {
+  metodo: string;
+  valor_original: number | null;
+  valor_relanzado: number | null;
+  diferencia_abs: number;
+  coincide_en_tolerancia: boolean;
+}
+
+export interface RerunResponse {
+  simulacion_original_id: number;
+  simulacion_nueva: UnifiedModuleResponse;
+  diferencia_maxima: number;
+  coincidencia_exacta: boolean;
+  comparacion_metodos: RerunComparisonMethod[];
 }
 
 const API_BASE = "/api";
@@ -91,17 +123,62 @@ export async function fetchCasos(): Promise<CasoEstudio[]> {
   return res.json();
 }
 
-export async function executeModulo2(
-  escenario: ScenarioType
-): Promise<Modulo2ExecuteResponse> {
-  const res = await fetch(`${API_BASE}/modulo2/sistemas-lineales/ejecutar`, {
+export async function runModule(
+  casoCodigo: CasoCodigo,
+  escenario: ScenarioType,
+  parametrosOverride?: Record<string, unknown>,
+  notasUsuario?: string
+): Promise<UnifiedModuleResponse> {
+  const res = await fetch(`${API_BASE}/modulos/${casoCodigo}/ejecutar`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ escenario }),
+    body: JSON.stringify({
+      escenario,
+      parametros_override: parametrosOverride,
+      usuario_equipo: "Equipo_SIMTELE",
+      notas_usuario: notasUsuario || null,
+    }),
   });
   if (!res.ok) {
     const detail = await res.text();
-    throw new Error(`Error al ejecutar Módulo 2 (${res.status}): ${detail}`);
+    throw new Error(`Error al ejecutar ${casoCodigo} (${res.status}): ${detail}`);
+  }
+  return res.json();
+}
+
+export async function fetchSimulaciones(
+  casoCodigo?: string,
+  escenario?: string
+): Promise<SimulacionListItem[]> {
+  const params = new URLSearchParams();
+  if (casoCodigo) params.set("caso_codigo", casoCodigo);
+  if (escenario) params.set("escenario", escenario);
+  const qs = params.toString();
+  const res = await fetch(`${API_BASE}/simulaciones${qs ? `?${qs}` : ""}`);
+  if (!res.ok) {
+    throw new Error(`Error al listar historial (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function fetchSimulacionById(
+  simulacionId: number
+): Promise<UnifiedModuleResponse> {
+  const res = await fetch(`${API_BASE}/simulaciones/${simulacionId}`);
+  if (!res.ok) {
+    throw new Error(`Error al recuperar simulación #${simulacionId} (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function relanzarSimulacion(
+  simulacionId: number
+): Promise<RerunResponse> {
+  const res = await fetch(`${API_BASE}/simulaciones/${simulacionId}/relanzar`, {
+    method: "POST",
+  });
+  if (!res.ok) {
+    throw new Error(`Error al relanzar simulación #${simulacionId} (${res.status})`);
   }
   return res.json();
 }

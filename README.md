@@ -118,7 +118,7 @@ npm run dev
 ```
 Acceder a la aplicación web en `http://localhost:5173`.
 
-### Paso 4: Ejecutar Pruebas Unitarias y Script del Módulo 2 (Semana 1)
+### Paso 4: Ejecutar Pruebas Unitarias y Scripts (Semanas 1 y 2)
 
 ```bash
 # Desde la raíz del proyecto (Windows PowerShell)
@@ -128,6 +128,12 @@ $env:PYTHONPATH="backend"
 # Ejecutar los 3 escenarios del Módulo 2 por consola
 .\backend\venv\Scripts\python.exe -m app.modules.modulo2_s1
 ```
+
+#### Endpoints Principales (API REST)
+* `GET /api/health` — Estado de la API y motor de BD (`postgresql` o `sqlite`).
+* `GET /api/casos` — Listado de los 4 módulos y sus 12 escenarios predefinidos.
+* `POST /api/modulos/{caso_codigo}/ejecutar` — Ejecuta cualquiera de los 4 módulos (`MOD1_DETENCION`, `MOD2_DETERIORO`, `MOD3_OSCILACIONES`, `MOD4_SENSORES`), persiste en BD y retorna resultados + 2 gráficos.
+* `GET /api/simulaciones` / `GET /api/simulaciones/{id}` / `POST /api/simulaciones/{id}/relanzar` — Historial persistente, recuperación completa y verificación por relanzamiento.
 
 ---
 

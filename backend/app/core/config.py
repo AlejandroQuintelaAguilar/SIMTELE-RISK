@@ -12,7 +12,7 @@ class Settings:
     """Parámetros de configuración de la aplicación y base de datos."""
 
     app_name: str = "SIMTELE-RISK API"
-    app_version: str = "1.0.0-semana1"
+    app_version: str = "2.0.0-semana2"
     postgres_url: str = os.getenv(
         "DATABASE_URL",
         "postgresql+psycopg2://postgres:simtele_pass@localhost:5433/simtele_risk",
