@@ -28,6 +28,25 @@ const NUMERIC_EDITABLE_KEYS: Record<CasoCodigo, string[]> = {
   MOD4_SENSORES: ["a", "b", "n_nodos", "ruido_sigma", "umbral_alerta"],
 };
 
+const MODULE_FORMULAS: Record<CasoCodigo, { ecuacion: string; unidades: string }> = {
+  MOD1_DETENCION: {
+    ecuacion: "dx/dt = v,  dv/dt = −(a₀ + k_d·v);  x_det = ∫ v(t) dt;  v(t_det) = 0",
+    unidades: "t [s], x [m], v [m/s], a₀ [m/s²], k_d [s⁻¹]",
+  },
+  MOD2_DETERIORO: {
+    ecuacion: "A·x = b (Calibración SPD);  D(t) = D₀ + α·t + β·t² = D_umbral",
+    unidades: "t [meses], D(t) [adimensional 0..1], κ₂(A) [adimensional]",
+  },
+  MOD3_OSCILACIONES: {
+    ecuacion: "m·x'' + c·x' + k·x = F₀·sin(ω·t);  Energía = ∫₀ᵀ x(t)² dt",
+    unidades: "t [s], x [m], m [kg], c [N·s/m], k [N/m], F₀ [N], ω [rad/s]",
+  },
+  MOD4_SENSORES: {
+    ecuacion: "P(t) ≈ y(t) (Lagrange, Newton, Splines Cúbicos);  S(t*) − y_umbral = 0",
+    unidades: "t [s], y(t) [u. telemetría], σ [ruido gaussiano]",
+  },
+};
+
 function fmtSci(value: number | null | undefined, digits = 3): string {
   if (value === null || value === undefined || Number.isNaN(value)) return "N/A";
   if (value === 0) return "0.000e+0";
@@ -138,6 +157,25 @@ export function ModuleWorkspacePage({
         <button className="btn" onClick={onBack}>
           ← Volver a Inicio
         </button>
+      </div>
+
+      <div className="banner" style={{ marginBottom: "1rem" }}>
+        <div>
+          <strong>Modelo Matemático:</strong>{" "}
+          <code>{MODULE_FORMULAS[caso.codigo].ecuacion}</code>
+        </div>
+        <div style={{ fontSize: "0.83rem", color: "var(--muted)", marginTop: "0.25rem" }}>
+          <strong>Unidades:</strong> {MODULE_FORMULAS[caso.codigo].unidades}
+          {(() => {
+            const escMeta = caso.escenarios.find((e) => e.tipo === escenario);
+            return escMeta ? (
+              <>
+                {" · "}
+                <strong>Fuente ({escMeta.tipo}):</strong> {escMeta.fuente_datos}
+              </>
+            ) : null;
+          })()}
+        </div>
       </div>
 
       <div className="controls-bar">

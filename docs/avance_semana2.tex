@@ -69,7 +69,29 @@ $v=v'=0$) & Secante & Sí & 29 & $t_{\text{det}}=4.99999816\text{ s}$ & $1.836\t
 \end{table}
 
 \subsection{Módulo 2: Deterioro Mecánico y Mantenimiento (\texttt{MOD2\_DETERIORO})}
-Integra los 4 solvers lineales SPD de la Semana 1 con la búsqueda de raíces de $D(t)-D_{\text{umbral}}=0$ (referencia analítica cuadrática: $t^*=21.25\text{ meses}$ en \texttt{NORMAL} y $t^*=11.869123\text{ meses}$ en \texttt{ESTRÉS}). En todos los escenarios, Newton-Raphson converge en 4--5 iteraciones con error $\le 8.68\times 10^{-10}$, mientras que en \texttt{MAL\_CONDICIONADO} ($\kappa_2(A)=1.494\times 10^7$) la amplificación de perturbación lineal es $7\,031\,425.91\times$.
+Integra los 4 solvers lineales SPD de la Semana 1 con la búsqueda de raíces de $D(t)-D_{\text{umbral}}=0$ (referencia analítica cuadrática: $t^*=21.25\text{ meses}$ en \texttt{NORMAL} y \texttt{MAL\_CONDICIONADO}; $t^*=11.869123\text{ meses}$ en \texttt{ESTRÉS}).
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{llcccc}
+\toprule
+\textbf{Escenario} & \textbf{Método} & \textbf{Conv.} & \textbf{Iter.} & \textbf{Resultado / Norma} & \textbf{Error Abs.} \\
+\midrule
+NORMAL & LU (Pivoteo Parcial) & Sí & 1 & $\|\mathbf{x}\|_2=1.598437$ & $0.000\times 10^{0}$ \\
+($\kappa_2=1.641$) & Gradiente Conjugado & Sí & 4 & $\|\mathbf{x}\|_2=1.598437$ & $2.719\times 10^{-16}$ \\
+ & Newton-Raphson (Raíz) & Sí & 4 & $t^*=21.250000\text{ meses}$ & $8.680\times 10^{-10}$ \\
+\midrule
+ESTRÉS & Gauss-Seidel ($n=12$) & Sí & 18 & $\|\mathbf{x}\|_2=3.501428$ & $1.139\times 10^{-12}$ \\
+($\text{tol}=10^{-11}$) & Gradiente Conjugado & Sí & 12 & $\|\mathbf{x}\|_2=3.501428$ & $4.578\times 10^{-15}$ \\
+ & Newton-Raphson (Raíz) & Sí & 5 & $t^*=11.869123\text{ meses}$ & $0.000\times 10^{0}$ \\
+\midrule
+MAL COND. & Jacobi (Hilbert $n=6$) & No & 158 & Divergió ($\rho(T_J)>1$) & $3.199\times 10^{100}$ \\
+($\kappa_2=1.494\times 10^7$) & Gauss-Seidel & No & 5000 & $\|\mathbf{x}\|_2=1.498411$ & $7.818\times 10^{-3}$ \\
+ & LU / CG (Lineal) & Sí & 1 / 6 & Amplif. $\delta\mathbf{b}=7.03\times 10^6\times$ & $2.51\times 10^{-10}$ / $1.29\times 10^{-3}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Módulo 3: Oscilaciones por Viento (\texttt{MOD3\_OSCILACIONES})}
 Resuelve $m\ddot{x}+c\dot{x}+kx=F_0\sin(\omega t)$ con RK2/RK4 e integra $\int_0^T x(t)^2\,dt$.
@@ -126,5 +148,13 @@ Durante las pruebas experimentales y la suite automatizada (\texttt{pytest}, 25/
     \item \textbf{Serialización JSONB estricta en PostgreSQL:} Valores \texttt{NaN}/\texttt{Inf} de ejecuciones divergentes rompían la inserción JSONB; se añadió saneamiento automático (\texttt{sanitize\_json}) antes de persistir.
     \item \textbf{Prueba de Persistencia y Relanzamiento:} La prueba \texttt{test\_persistence\_save\_retrieve\_and\_rerun} ejecutó, guardó, recuperó por ID y relanzó la simulación comprobando $\Delta_{\max} = 0.0 \le 10^{-12}$.
 \end{enumerate}
+
+\section{Enlaces de Entregables y Verificación en PostgreSQL (Docker)}
+\begin{itemize}
+    \item \textbf{Repositorio GitHub:} \url{https://github.com/AlejandroQuintelaAguilar/SIMTELE-RISK.git}
+    \item \textbf{Aplicación Web (Local):} Frontend en \url{http://localhost:5173} · API REST y Swagger en \url{http://127.0.0.1:8000/docs}.
+    \item \textbf{Base de Datos PostgreSQL (\texttt{simtele\_risk\_db} en Docker):} Orquestada con \texttt{docker-compose.yml} (puerto \texttt{5433:5432}), esquema \texttt{database/schema.sql} verificado con 4 módulos en \texttt{caso\_estudio}, 12 escenarios base en \texttt{escenario}, y persistencia comprobada de simulaciones, ejecuciones, iteraciones y resúmenes con doble conclusión (numérica y del problema).
+    \item \textbf{Suite Automatizada:} \texttt{pytest backend/tests -v} $\rightarrow$ 25/25 pruebas aprobadas contra PostgreSQL; compilación frontend \texttt{tsc \&\& vite build} sin errores.
+\end{itemize}
 
 \end{document}
