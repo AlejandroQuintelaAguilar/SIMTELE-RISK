@@ -1,0 +1,82 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+
+\geometry{margin=2.0cm}
+
+\definecolor{accionbg}{RGB}{240,247,255}
+\definecolor{accionborder}{RGB}{30,100,180}
+\definecolor{p1color}{RGB}{15,85,150}
+\definecolor{p2color}{RGB}{130,45,120}
+
+\newcommand{\accion}[1]{%
+\begin{tcolorbox}[colback=accionbg,colframe=accionborder,boxrule=0.6pt,arc=2pt,left=6pt,right=6pt,top=4pt,bottom=4pt]
+\small\textbf{ACCIÓN EN PANTALLA:} #1
+\end{tcolorbox}
+}
+
+\newcommand{\puno}[1]{\noindent\textcolor{p1color}{\textbf{Persona 1 (P1):}} \textit{``#1''}\par\medskip}
+\newcommand{\pdos}[1]{\noindent\textcolor{p2color}{\textbf{Persona 2 (P2):}} \textit{``#1''}\par\medskip}
+
+\title{\textbf{Guion de Video Demostrativo (Máx. 3 Minutos)} \\
+\large SIMTELE-RISK — Enfoque Práctico, Utilidad y Demostración en Software}
+\author{Exposición para 2 Integrantes}
+\date{Noviembre 2026}
+
+\begin{document}
+\maketitle
+
+\section*{Preparación Previa}
+\begin{itemize}[noitemsep]
+    \item Tener Docker iniciado (\texttt{simtele\_risk\_db} activo), el Backend en puerto \texttt{8000} y el Frontend abierto en \url{http://localhost:5173/}.
+    \item Ajustar el zoom del navegador (p. ej. 90\%) para que se vean cómodamente los dos gráficos y las tablas.
+    \item \textbf{Estilo al hablar:} Tono natural, directo y práctico; explicar \textbf{para qué sirve} cada método en el sistema sin recitar fórmulas largas.
+\end{itemize}
+
+\section{0:00 -- 0:25 | Presentación y Panorama General (\texttt{Inicio})}
+\accion{Mostrar la pantalla \textbf{Inicio} en \url{http://localhost:5173/}. Señalar en la parte superior que está conectado a \texttt{BD: postgresql} y mostrar las 4 tarjetas principales.}
+
+\puno{Hola, somos [Nombre 1] y [Nombre 2], y les presentamos SIMTELE-RISK, un simulador web educativo inspirado en Mi Teleférico de La Paz. Su objetivo es evaluar escenarios hipotéticos de riesgo operativo usando métodos numéricos clásicos y midiendo siempre qué tan confiables son los cálculos.}
+
+\pdos{El proyecto corre sobre FastAPI en el servidor, React en la interfaz y una base de datos PostgreSQL en Docker. Aquí en el inicio vemos los cuatro casos de estudio obligatorios, y cada uno permite probar tres situaciones: operación normal, operación bajo estrés y un caso mal condicionado.}
+
+\section{0:25 -- 1:05 | Módulo 1: Frenado de Emergencia (\texttt{Mód. 1: Detención})}
+\accion{Hacer clic en \textbf{Abrir Módulo} en \texttt{MOD1\_DETENCION}. Elegir el escenario \textbf{ESTRÉS} y pulsar \textbf{Ejecutar y Guardar Simulación}.}
+
+\puno{Entramos al Módulo 1, que simula el frenado de emergencia de una cabina para saber en cuántos segundos y en cuántos metros logra detenerse. Para simular cómo cambian la velocidad y la posición segundo a segundo usamos Runge-Kutta de segundo orden y cuarto orden: ahí vemos cómo el de cuarto orden mantiene mucha mayor precisión incluso cuando damos saltos de tiempo grandes.}
+
+\accion{Bajar a los gráficos y a la tabla de resultados. Hacer clic en \textbf{Ver (5)} en la fila de \textbf{Romberg} para mostrar la tabla paso a paso.}
+
+\puno{Para calcular la distancia total de frenado usamos integración numérica con Trapecio, Simpson 1/3 y Romberg. La gran utilidad de Romberg es que toma los cálculos del Trapecio y los va refinando automáticamente paso a paso para eliminar error sin necesidad de dividir el tiempo en millones de partes; como se ve en pantalla, converge prácticamente al valor exacto. Finalmente, con Bisección, Newton-Raphson y Secante ubicamos el instante exacto en que la velocidad llega a cero.}
+
+\section{1:05 -- 1:40 | Módulo 2: Desgaste y Calibración (\texttt{Mód. 2: Deterioro})}
+\accion{Cambiar a la pestaña \textbf{Mód. 2: Deterioro}. Elegir \textbf{MAL CONDICIONADO} y pulsar \textbf{Ejecutar y Guardar Simulación}. Señalar la tabla comparativa y las dos conclusiones abajo.}
+
+\pdos{En el Módulo 2 estimamos el desgaste acumulado de los componentes para anticipar cuándo tocaría mantenimiento. Primero calibramos los parámetros internos resolviendo sistemas de ecuaciones lineales con Jacobi, Gauss-Seidel, factorización LU y Gradiente Conjugado, y luego usamos búsqueda de raíces para predecir el mes en que el desgaste alcanza el límite de alerta.}
+
+\pdos{Al activar el escenario mal condicionado, el software nos muestra algo muy importante en ingeniería: aunque métodos como LU o Gradiente Conjugado encuentren respuesta, si el sistema es muy sensible, cualquier pequeña variación en las mediciones de entrada se multiplica millones de veces en el resultado. Por eso el sistema separa siempre la conclusión técnica de los algoritmos de la conclusión práctica sobre el teleférico.}
+
+\section{1:40 -- 2:10 | Módulos 3 y 4: Viento y Sensores}
+\accion{Ir a \textbf{Mód. 3: Viento}, seleccionar \textbf{MAL CONDICIONADO} y pulsar \textbf{Ejecutar y Guardar Simulación}. Señalar en la tabla que Runge-Kutta 2 muestra \textit{Advertencia} mientras Runge-Kutta 4 se mantiene estable.}
+
+\puno{En el Módulo 3 analizamos las oscilaciones de la cabina por ráfagas de viento con Runge-Kutta, y medimos la energía acumulada del movimiento integrando con Trapecio, Simpson y Romberg. En el escenario mal condicionado comprobamos el límite de estabilidad: Runge-Kutta 2 se dispara por usar un paso grande ante un sistema muy rígido, mientras Runge-Kutta 4 logra mantenerse estable.}
+
+\accion{Ir a \textbf{Mód. 4: Sensores}, seleccionar \textbf{MAL CONDICIONADO} y pulsar \textbf{Ejecutar y Guardar Simulación}. Mostrar en el gráfico superior cómo Lagrange/Newton oscilan en los bordes y Splines Cúbicos siguen la curva.}
+
+\pdos{En el Módulo 4 simulamos que se pierden datos de los sensores y tratamos de reconstruirlos con Lagrange, Newton y Splines Cúbicos. Con una señal compleja como la de este escenario, los polinomios tradicionales de Lagrange y Newton generan oscilaciones gigantes en los extremos, mientras que los Splines Cúbicos unen los puntos por tramos suaves y reconstruyen la señal faltante con gran precisión.}
+
+\section{2:10 -- 2:50 | Base de Datos e Historial (\texttt{Historial})}
+\accion{Entrar a la pestaña \textbf{Historial}. Pulsar \textbf{Relanzar} en una simulación guardada y mostrar la etiqueta verde de coincidencia exacta. Luego pulsar \textbf{Recuperar} en otra simulación.}
+
+\pdos{Por último, en la pestaña Historial comprobamos que nada queda solo en memoria: cada simulación se guarda en PostgreSQL con sus parámetros, tablas y gráficos. Podemos recuperar cualquier prueba anterior para revisarla o relanzarla y confirmar que los resultados se repiten de forma idéntica.}
+
+\puno{De esta manera, SIMTELE-RISK reúne los métodos numéricos en una herramienta práctica, transparente y fácil de verificar. ¡Muchas gracias por su atención!}
+
+\end{document}
