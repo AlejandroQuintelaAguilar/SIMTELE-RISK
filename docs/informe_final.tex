@@ -1,0 +1,395 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usepackage{tcolorbox}
+\usetikzlibrary{positioning,arrows.meta}
+
+\geometry{margin=2.1cm}
+
+\definecolor{primary}{RGB}{15,85,150}
+\definecolor{softbg}{RGB}{244,248,252}
+
+\newtcolorbox{pseudo}[1]{%
+  colback=softbg,
+  colframe=primary,
+  boxrule=0.6pt,
+  arc=2pt,
+  title=\textbf{#1},
+  fonttitle=\small,
+  left=6pt,right=6pt,top=4pt,bottom=4pt
+}
+
+\begin{document}
+
+% ============================================================================
+% 1. PORTADA
+% ============================================================================
+\begin{titlepage}
+    \centering
+    \vspace*{1.5cm}
+    {\Large \textbf{DESAFÍO INTEGRADOR FINAL — MÉTODOS NUMÉRICOS}\par}
+    \vspace{0.8cm}
+    {\Huge \textbf{\textcolor{primary}{SIMTELE-RISK}}\par}
+    \vspace{0.4cm}
+    {\Large Plataforma Web de Simulación Numérica y Análisis de Riesgos en Sistemas de Transporte por Cable\par}
+    \vspace{1.2cm}
+    \begin{tcolorbox}[colback=softbg,colframe=primary,width=0.9\textwidth]
+        \centering
+        \textbf{Contexto Académico:} Modelo educativo inspirado en \textit{Mi Teleférico} (La Paz, Bolivia). Todos los parámetros, matrices, señales y escenarios son estrictamente sintéticos con fines académicos y no describen fallas reales ni tienen conexión con sistemas operativos reales.
+    \end{tcolorbox}
+    \vspace{1.5cm}
+
+    \textbf{\large Participantes y Mención}\\[0.5cm]
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Integrante} & \textbf{Mención} \\
+        \midrule
+        Alejandro Quintela Aguilar & Desarrollo de Software \\
+        Dayana Karen Rodriguez Chalco & Ingeniería de Sistemas \\
+        Caleb Mendoza Calderon & Desarrollo de Software \\
+        Aaron Osvaldo Calzada Nina & Desarrollo de Software \\
+        \bottomrule
+    \end{tabular}
+
+    \vfill
+    \textbf{Repositorio GitHub:} \url{https://github.com/AlejandroQuintelaAguilar/SIMTELE-RISK.git}\\
+    \textbf{Aplicación Web en Producción:} \url{https://simtele-risk-peach.vercel.app/}\\[0.5cm]
+    {\large Noviembre 2026\par}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ============================================================================
+% 2. PARTICIPANTES Y APORTES POR MENCIÓN
+% ============================================================================
+\section{Participantes y Aportes por Mención}
+\begin{itemize}
+    \item \textbf{Alejandro Quintela Aguilar (Desarrollo de Software):} Diseño de la arquitectura desacoplada en tres capas, API REST con FastAPI, orquestación con Docker Compose, despliegue continuo en Vercel + Neon Postgres y suite de pruebas automatizadas (\texttt{pytest}).
+    \item \textbf{Dayana Karen Rodriguez Chalco (Ingeniería de Sistemas):} Modelado relacional de base de datos (DER y script SQL en PostgreSQL), integración de trazabilidad/persistencia de simulaciones, panel general de comparación $4\times 3$ y validación de requerimientos de sistemas.
+    \item \textbf{Caleb Mendoza Calderon (Desarrollo de Software):} Implementación desde cero en \texttt{float64} de los motores de sistemas lineales (Jacobi, Gauss-Seidel, LU, Gradiente Conjugado), teoría de errores transversal e interfaz web en React/TypeScript con gráficos SVG.
+    \item \textbf{Aaron Osvaldo Calzada Nina (Desarrollo de Software):} Implementación desde cero de los motores de búsqueda de raíces, interpolación (Lagrange, Newton, Splines Cúbicos), integración (Trapecio, Simpson 1/3, Romberg) y EDO (RK2 Heun, RK4), junto con la verificación analítica de los cuatro módulos.
+\end{itemize}
+
+% ============================================================================
+% 3. RESUMEN Y 4. OBJETIVO
+% ============================================================================
+\section{Resumen}
+\textbf{SIMTELE-RISK} es una aplicación web integrada que formula, resuelve, verifica y compara problemas matemáticos aplicados al transporte por cable mediante cinco familias de métodos numéricos implementados desde cero en precisión \texttt{float64}: sistemas lineales, búsqueda de raíces, interpolación, integración numérica y ecuaciones diferenciales ordinarias (EDO). La teoría de errores actúa de forma transversal calculando errores absolutos, relativos (protegidos contra división por cero mediante $\epsilon_{\text{mach}}=10^{-15}$), porcentuales, residuales y sensibilidad ante perturbaciones. Toda ejecución se almacena en PostgreSQL permitiendo recuperar parámetros, tablas paso a paso, gráficos y relanzar experimentos con verificación de repetibilidad.
+
+\section{Objetivos}
+\subsection*{Objetivo General}
+Desarrollar y validar una plataforma web reproducible con persistencia relacional para simular cuatro casos de estudio de ingeniería de transporte por cable en condiciones \texttt{NORMAL}, \texttt{ESTRÉS} y \texttt{MAL CONDICIONADO}, contrastando el desempeño numérico de los algoritmos frente a soluciones analíticas o de alta precisión.
+
+\subsection*{Objetivos Específicos}
+\begin{enumerate}[noitemsep]
+    \item Formular los cuatro modelos matemáticos con variables, unidades, hipótesis y condiciones iniciales coherentes.
+    \item Implementar desde cero todos los algoritmos numéricos obligatorios en \texttt{float64} sin delegar su lógica en cajas negras.
+    \item Cuantificar transversalmente error absoluto, relativo, porcentual, residual, número de condición $\kappa_2(A)$ y estabilidad.
+    \item Persistir ejecuciones completas en PostgreSQL (Docker local y Neon en producción) permitiendo recuperar y relanzar corridas.
+    \item Diferenciar en cada caso la conclusión numérica sobre los algoritmos de la conclusión física/operativa sobre el fenómeno.
+\end{enumerate}
+
+% ============================================================================
+% 5. ARQUITECTURA GENERAL Y DER
+% ============================================================================
+\section{Arquitectura General y Diagrama Entidad--Relación (DER)}
+El sistema adopta una arquitectura limpia en tres capas:
+\begin{itemize}[noitemsep]
+    \item \textbf{Capa de Presentación (\texttt{frontend/}):} Aplicación React + TypeScript + Vite con 4 tarjetas de módulos, vista de trabajo por módulo (parámetros editables, 2 gráficos SVG, tablas y dobles conclusiones), panel global de comparación $4\times 3$ e historial persistente.
+    \item \textbf{Capa de Lógica y Cálculo (\texttt{backend/}):} API REST en FastAPI que orquesta los motores numéricos propios (\texttt{app/numerical/}), el motor transversal de errores (\texttt{app/core/error\_metrics.py}) y los cuatro casos (\texttt{app/modules/}).
+    \item \textbf{Capa de Persistencia (\texttt{database/schema.sql}):} Base relacional PostgreSQL con 6 tablas normalizadas, desplegada con Docker Compose (\texttt{docker-compose.yml}) en entorno local y en Vercel + Neon Postgres para acceso público en la nube.
+\end{itemize}
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[
+    node distance=0.8cm and 1.1cm,
+    ent/.style={rectangle, draw=primary, fill=softbg, rounded corners=2pt, minimum width=3.1cm, minimum height=0.8cm, font=\small\ttfamily, align=center},
+    rel/.style={-{Stealth[length=2.5mm]}, thick, primary}
+]
+    \node[ent] (caso) {caso\_estudio\\[-2pt]\scriptsize (id, codigo, nombre)};
+    \node[ent, right=of caso] (esc) {escenario\\[-2pt]\scriptsize (id, caso\_id, tipo)};
+    \node[ent, right=of esc] (sim) {simulacion\\[-2pt]\scriptsize (id, escenario\_id, fecha)};
+    \node[ent, below=of sim] (ejec) {ejecucion\_metodo\\[-2pt]\scriptsize (id, simulacion\_id, metodo)};
+    \node[ent, left=of ejec] (iter) {iteracion\_resultado\\[-2pt]\scriptsize (id, ejecucion\_id, numero)};
+    \node[ent, left=of iter] (res) {resultado\_resumen\\[-2pt]\scriptsize (id, ejecucion\_id, interp.)};
+
+    \draw[rel] (caso) -- node[above,font=\scriptsize]{1:N} (esc);
+    \draw[rel] (esc) -- node[above,font=\scriptsize]{1:N} (sim);
+    \draw[rel] (sim) -- node[right,font=\scriptsize]{1:N} (ejec);
+    \draw[rel] (ejec) -- node[above,font=\scriptsize]{1:N} (iter);
+    \draw[rel] (ejec) to[bend left=22] node[below,font=\scriptsize]{1:1} (res);
+\end{tikzpicture}
+\caption{Modelo Entidad--Relación implementado en \texttt{database/schema.sql} (PostgreSQL 16).}
+\end{figure}
+
+% ============================================================================
+% 6 y 7. DEFINICIÓN DE MÓDULOS Y MODELOS MATEMÁTICOS
+% ============================================================================
+\section{Definición y Fundamento Matemático de los Cuatro Módulos}
+
+\subsection{Módulo 1: Detención de Emergencia de Cabinas (\texttt{MOD1\_DETENCION})}
+\textbf{Pregunta guía:} \textit{¿Cómo varían el tiempo y la distancia de detención frente a cambios de velocidad inicial y desaceleración?}
+\begin{itemize}[noitemsep]
+    \item \textbf{Variables y unidades:} $t\,[\text{s}]$, posición $x(t)\,[\text{m}]$, velocidad $v(t)\,[\text{m/s}]$, desaceleración nominal $a_0\,[\text{m/s}^2]$, arrastre $k_d\,[\text{s}^{-1}]$.
+    \item \textbf{Modelo EDO:} $\frac{dx}{dt}=v(t)$, $\frac{dv}{dt}=-(a_0+k_d v(t))$ con $x(0)=0$, $v(0)=v_0>0$.
+    \item \textbf{Solución analítica ($k_d=0$):} $v(t)=v_0-a_0 t$, $t_{\text{det}}=\frac{v_0}{a_0}$, $x_{\text{det}}=\frac{v_0^2}{2a_0}$. Para $k_d>0$, $t_{\text{det}}=\frac{1}{k_d}\ln\left(1+\frac{k_d v_0}{a_0}\right)$.
+    \item \textbf{Escenarios:} \texttt{NORMAL} ($v_0=6.0, a_0=1.2, k_d=0, h=0.05$); \texttt{ESTRÉS} ($v_0=8.5, a_0=0.75, k_d=0.02, h=0.4$); \texttt{MAL CONDICIONADO} (frenado asintótico tangencial $v(t)=v_0(1-t/t_{\text{det}})^2$ con raíz doble $v=v'=0$).
+\end{itemize}
+
+\subsection{Módulo 2: Deterioro Mecánico y Mantenimiento (\texttt{MOD2\_DETERIORO})}
+\textbf{Pregunta guía:} \textit{¿Cuándo alcanzaría un indicador sintético de desgaste un umbral crítico de inspección?}
+\begin{itemize}[noitemsep]
+    \item \textbf{Variables y unidades:} vector de parámetros calibrados $\mathbf{x}\in\mathbb{R}^n$, matriz SPD $A\in\mathbb{R}^{n\times n}$, desgaste $D(t)\in[0,1]$, tiempo $t\,[\text{meses}]$.
+    \item \textbf{Ecuaciones:} Calibración $A\mathbf{x}=\mathbf{b}$ y evolución polinómica $D(t)=D_0+\alpha t+\beta t^2=D_{\text{umbral}}$.
+    \item \textbf{Referencia analítica:} Raíz positiva $t^* = \frac{-\alpha+\sqrt{\alpha^2-4\beta(D_0-D_{\text{umbral}})}}{2\beta}$ y vector exacto $\mathbf{x}^*$ conocido ($\mathbf{b}=A\mathbf{x}^*$).
+    \item \textbf{Escenarios:} \texttt{NORMAL} ($n=4$ SPD, $\kappa_2<10$); \texttt{ESTRÉS} ($n=12$, $\text{tol}=10^{-11}$); \texttt{MAL CONDICIONADO} (matriz tipo Hilbert perturbada $n=6$, $\kappa_2>10^5$, perturbación $\frac{\|\delta\mathbf{b}\|_2}{\|\mathbf{b}\|_2}=10^{-4}$).
+\end{itemize}
+
+\subsection{Módulo 3: Oscilaciones por Viento (\texttt{MOD3\_OSCILACIONES})}
+\textbf{Pregunta guía:} \textit{¿Cómo se modifica la oscilación lateral y la energía acumulada ante ráfagas y rigidez del sistema?}
+\begin{itemize}[noitemsep]
+    \item \textbf{Variables y unidades:} $x(t)\,[\text{m}]$, $v(t)=\dot{x}(t)\,[\text{m/s}]$, $m\,[\text{kg}]$, $c\,[\text{N}\cdot\text{s/m}]$, $k\,[\text{N/m}]$, fuerza $F(t)=F_0\sin(\omega t)\,[\text{N}]$.
+    \item \textbf{Ecuación diferencial e integral:} $m\ddot{x}+c\dot{x}+kx=F(t)$ y energía acumulada $E = \int_0^T x(t)^2\,dt$.
+    \item \textbf{Referencia analítica:} Régimen subamortiguado ($\zeta<1$) con solución homogénea $e^{-\zeta\omega_0 t}[C_1\cos(\omega_d t)+C_2\sin(\omega_d t)]$ más componente armónica particular.
+    \item \textbf{Escenarios:} \texttt{NORMAL} (brisa moderada, $h=0.02\text{ s}, T=20\text{ s}$); \texttt{ESTRÉS} (cerca de resonancia $\omega=1.55\text{ rad/s}, T=120\text{ s}$); \texttt{MAL CONDICIONADO} (sistema rígido \textit{stiff} $k=450000\text{ N/m}, h=0.12\text{ s}$).
+\end{itemize}
+
+\subsection{Módulo 4: Reconstrucción de Señales de Sensores (\texttt{MOD4\_SENSORES})}
+\textbf{Pregunta guía:} \textit{¿Cómo reconstruir lecturas faltantes de telemetría y cuantificar la distorsión por ruido o espaciamiento?}
+\begin{itemize}[noitemsep]
+    \item \textbf{Variables y unidades:} instantes $t_i\in[a,b]\,[\text{s}]$, lecturas $y_i=y(t_i)+\eta_i$, ruido $\sigma$, nodos ocultos $\mathcal{O}$.
+    \item \textbf{Modelos:} Polinomio interpolante $P(t)$ (Lagrange y Newton), Spline Cúbico Natural $S(t)$ y cruce de umbral $S(t^*)-y_{\text{umbral}}=0$.
+    \item \textbf{Escenarios:} \texttt{NORMAL} ($\sin(t)$, 8 nodos, 2 ocultos); \texttt{ESTRÉS} ($e^{-t}\cos(2t)$, ruido $\sigma=0.04$, 12 nodos, 4 ocultos); \texttt{MAL CONDICIONADO} (función de Runge $\frac{1}{1+25t^2}$ en $[-5,5]$, 15 nodos equiespaciados).
+\end{itemize}
+
+% ============================================================================
+% 8. MÉTODOS Y PSEUDOCÓDIGO
+% ============================================================================
+\section{Métodos Implementados y Pseudocódigo}
+
+\begin{pseudo}{1. Sistemas Lineales: Jacobi, Gauss-Seidel, LU (Pivoteo Parcial) y Gradiente Conjugado}
+\begin{verbatim}
+Jacobi / Gauss-Seidel(A, b, x0, tol, max_iter):
+  Para k = 1..max_iter:
+    Para i = 1..n:
+      x_new[i] = (b[i] - sum_{j!=i} A[i,j] * x_ref_vec[j]) / A[i,i]
+      (Jacobi usa x^(k-1); Gauss-Seidel usa valores ya actualizados en x^(k))
+    Si ||b - A*x_new||_2 <= tol: retornar x_new (convergio = Verdadero)
+
+LU_Pivoteo_Parcial(A, b):
+  Inicializar U = A, L = I, P = I
+  Para k = 1..n-1:
+    p = argmax_{i>=k} |U[i,k]|; intercambiar filas k y p en U, P y L[:,:k]
+    Para i = k+1..n: L[i,k] = U[i,k]/U[k,k]; U[i,k:] -= L[i,k]*U[k,k:]
+  Resolver L*y = P*b (adelante) y U*x = y (atrás)
+
+Gradiente_Conjugado(A, b, x0, tol, max_iter):
+  Validar A = A^T y min(eig(A)) > 0 (SPD); si falla, lanzar NonSPDError
+  r = b - A*x0; p = r; rs_old = r^T r
+  Para k = 1..max_iter:
+    alpha = rs_old / (p^T A p); x += alpha*p; r -= alpha*(A*p); rs_new = r^T r
+    Si sqrt(rs_new) <= tol: retornar x
+    p = r + (rs_new / rs_old)*p; rs_old = rs_new
+\end{verbatim}
+\end{pseudo}
+
+\begin{pseudo}{2. Búsqueda de Raíces: Bisección, Newton-Raphson y Secante}
+\begin{verbatim}
+Biseccion(f, a, b, tol, max_iter):
+  Verificar f(a)*f(b) <= 0
+  Para k = 1..max_iter:
+    c = (a + b)/2; Si |f(c)| <= tol o (b - a)/2 <= tol: retornar c
+    Si f(a)*f(c) < 0: b = c  si no: a = c
+
+Newton_Raphson(f, df, x0, tol, max_iter):
+  Para k = 1..max_iter:
+    Si |df(x)| < 1e-15: detener por derivada nula
+    x_next = x - f(x)/df(x); Si |f(x_next)| <= tol y |x_next - x| <= tol: retornar x_next
+
+Secante(f, x0, x1, tol, max_iter):
+  Para k = 1..max_iter:
+    x_next = x1 - f(x1)*(x1 - x0) / (f(x1) - f(x0))
+    Si |f(x_next)| <= tol y |x_next - x1| <= tol: retornar x_next
+\end{verbatim}
+\end{pseudo}
+
+\begin{pseudo}{3. Interpolación: Lagrange, Newton y Splines Cúbicos Naturales}
+\begin{verbatim}
+Lagrange(x_nodos, y_nodos, x_eval):
+  Para cada x: P(x) = sum_i y[i] * prod_{j!=i} (x - x_nodos[j]) / (x_nodos[i] - x_nodos[j])
+
+Newton_Dif_Divididas(x_nodos, y_nodos, x_eval):
+  Calcular tabla D[i,j] = (D[i+1,j-1] - D[i,j-1]) / (x[i+j] - x[i])
+  Evaluar mediante esquema de Horner usando la fila superior D[0,:]
+
+Splines_Cubicos_Naturales(x_nodos, y_nodos):
+  h[i] = x[i+1] - x[i]; imponer S''(x_0) = S''(x_{n-1}) = 0
+  Armar sistema tridiagonal para c[1..n-2] y resolver con algoritmo de Thomas
+  Calcular b[i], d[i] por tramo y evaluar S_i(x) = a[i] + b[i]dx + c[i]dx^2 + d[i]dx^3
+\end{verbatim}
+\end{pseudo}
+
+\begin{pseudo}{4. Integración (Trapecio, Simpson 1/3, Romberg) y EDO (RK2 Heun, RK4)}
+\begin{verbatim}
+Trapecio(f, a, b, n): h = (b-a)/n; I = h * (0.5*(f(a)+f(b)) + sum_{k=1}^{n-1} f(a+k*h))
+Simpson_13(f, a, b, n par): I = (h/3) * (f(a)+f(b) + 4*sum_impares + 2*sum_pares)
+Romberg(f, a, b, L):
+  R[i,0] = Trapecio refinado con 2^i subintervalos
+  Para j = 1..i: R[i,j] = R[i,j-1] + (R[i,j-1] - R[i-1,j-1]) / (4^j - 1)
+
+RK2_Heun(f, t, y, h): k1 = f(t, y); k2 = f(t+h, y+h*k1); y_next = y + (h/2)*(k1 + k2)
+RK4_Clasico(f, t, y, h):
+  k1 = f(t,y); k2 = f(t+h/2, y+h*k1/2); k3 = f(t+h/2, y+h*k2/2); k4 = f(t+h, y+h*k3)
+  y_next = y + (h/6)*(k1 + 2*k2 + 2*k3 + k4)   (verificar ||y_next||_2 <= 1e6)
+\end{verbatim}
+\end{pseudo}
+
+% ============================================================================
+% 9. PRUEBAS ANALÍTICAS Y 12. TEORÍA DE ERRORES TRANSVERSAL
+% ============================================================================
+\section{Teoría de Errores Transversal y Pruebas Analíticas}
+En todos los módulos se calculan de forma sistemática en \texttt{backend/app/core/error\_metrics.py}:
+\[
+    E_{\text{abs}} = |v_{\text{ref}} - v_{\text{aprox}}|, \qquad
+    E_{\text{rel}} = \frac{|v_{\text{ref}} - v_{\text{aprox}}|}{\max(|v_{\text{ref}}|, 10^{-15})}, \qquad
+    E_{\%} = E_{\text{rel}} \times 100\%
+\]
+Para sistemas lineales se añaden la norma euclidiana del residual $\|\mathbf{r}\|_2=\|\mathbf{b}-A\mathbf{x}\|_2$, el número de condición espectral $\kappa_2(A)=\|A\|_2\|A^{-1}\|_2$ y el factor de amplificación ante perturbación controlada $\frac{\|\delta\mathbf{b}\|_2}{\|\mathbf{b}\|_2}=10^{-4}$.
+
+\paragraph{Pruebas Analíticas Automatizadas (\texttt{pytest}, 26/26 aprobadas):}
+\begin{itemize}[noitemsep]
+    \item \textbf{Sistemas Lineales:} Coincidencia con $\mathbf{x}^*$ en sistemas SPD $4\times 4$ y $12\times 12$, permutación por pivote nulo en LU y rechazo controlado (\texttt{NonSPDError}) en Gradiente Conjugado para matrices asimétricas o indefinidas.
+    \item \textbf{Raíces:} Precisión $<10^{-9}$ frente a $\sqrt{2}$ en $x^2-2=0$ y manejo de intervalos sin cambio de signo.
+    \item \textbf{Interpolación:} Reconstrucción exacta de polinomios cuadráticos por Lagrange/Newton y ventaja de Splines en Runge.
+    \item \textbf{Integración:} Error $<10^{-11}$ con Romberg en $\int_0^\pi \sin(x)\,dx=2$ y validación de $n$ par en Simpson 1/3.
+    \item \textbf{EDO:} Orden $O(h^4)$ de RK4 frente a $O(h^2)$ de RK2 en $y'=-2y$ ($y=e^{-2t}$) y detección de inestabilidad rígida.
+    \item \textbf{Persistencia PostgreSQL:} Prueba \texttt{test\_persistence\_save\_retrieve\_and\_rerun} verificando guardar, recuperar por ID y relanzar con diferencia máxima $\Delta_{\max} = 0.0 \le 10^{-12}$.
+\end{itemize}
+
+% ============================================================================
+% 10, 11 y 13. RESULTADOS, TABLAS DE ITERACIONES Y COMPARACIÓN GRÁFICA
+% ============================================================================
+\section{Resultados por Módulo, Tablas de Trazabilidad y Comparación 4$\times$3}
+
+\begin{table}[h!]
+\centering
+\caption{Resumen consolidado del Panel General de Comparación ($4 \times 3$) verificado en el sistema.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llcccc}
+\toprule
+\textbf{Módulo} & \textbf{Escenario} & \textbf{Conv.} & \textbf{Mejor Método} & \textbf{Mejor $E_{\text{abs}}$} & \textbf{Hallazgo / Alerta} \\
+\midrule
+Mód. 1: Detención & NORMAL & 8/8 & Simpson / Newton & $0.00\times 10^{0}$ & $t_{\text{det}}=5.00\text{ s}, x_{\text{det}}=15.00\text{ m}$ \\
+ & ESTRÉS & 8/8 & Newton-Raphson & $1.78\times 10^{-15}$ & Romberg $2.84\times 10^{-14}$ vs RK2 $4.05\times 10^{-3}$ \\
+ & MAL COND. & 7/8 & Simpson / Romberg & $0.00\times 10^{0}$ & Bisección sin signo; Newton 21 iter. \\
+\midrule
+Mód. 2: Deterioro & NORMAL & 7/7 & LU / Bisección & $0.00\times 10^{0}$ & $\kappa_2=1.64$, amplif. $0.80\times$, $t^*=21.25$ m \\
+ & ESTRÉS & 7/7 & Bisección / Newton & $0.00\times 10^{0}$ & $n=12$, CG 12 iter. vs Jacobi 31 iter. \\
+ & MAL COND. & 5/7 & Bisección / LU & $0.00\times 10^{0}$ & Jacobi diverge; amplif. $\delta\mathbf{b}=7.03\times 10^6\times$ \\
+\midrule
+Mód. 3: Viento & NORMAL & 5/5 & Romberg ($\int x^2dt$) & $6.01\times 10^{-11}$ & RK4 $2.31\times 10^{-10}$ vs RK2 $4.37\times 10^{-6}$ \\
+ & ESTRÉS & 4/5 & RK4 (Clásico) & $1.72\times 10^{-5}$ & Resonancia $T=120\text{ s}$, $\text{amp}=2.81\text{ m}$ \\
+ & MAL COND. & 3/5 & Romberg / RK4 & $1.16\times 10^{-5}$ & RK2 explota en paso 15 (sistema \textit{stiff}) \\
+\midrule
+Mód. 4: Sensores & NORMAL & 6/6 & Newton-Raphson & $7.10\times 10^{-13}$ & Lagrange/Newton $\text{RMSE}=8.82\times 10^{-3}$ \\
+ & ESTRÉS & 6/6 & Newton-Raphson & $2.05\times 10^{-13}$ & Ruido $\sigma=0.04$: $\text{RMSE}\approx 0.1145$ \\
+ & MAL COND. & 6/6 & Newton-Raphson & $2.25\times 10^{-13}$ & Runge: Lagrange $109.22$ vs Spline $1.77\times 10^{-3}$ \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\begin{table}[h!]
+\centering
+\small
+\caption{Ejemplo de trazabilidad por refinamiento (Romberg, Módulo 1 \texttt{ESTRÉS}, referencia $41.93663091\text{ m}$) e iteraciones iniciales de Jacobi/Gauss-Seidel (Módulo 2 \texttt{NORMAL}).}
+\begin{tabular}{cccc|cccc}
+\toprule
+\multicolumn{4}{c|}{\textbf{Refinamiento Romberg (Mód. 1 ESTRÉS)}} & \multicolumn{4}{c}{\textbf{Iteraciones Mód. 2 NORMAL ($\mathbf{x}^{(0)}=\mathbf{0}$)}} \\
+\textbf{Nivel} & $n$ & \textbf{Valor [m]} & \textbf{$E_{\text{abs}}$} & \textbf{Método} & $k$ & $x_1^{(k)}$ & $x_2^{(k)}$ \\
+\midrule
+1 & 1 & 43.41884880 & $1.482\times 10^{0}$ & Jacobi & 1 & 1.072500 & 0.587500 \\
+2 & 2 & 41.91757249 & $1.906\times 10^{-2}$ & Jacobi & 2 & 1.160625 & 0.805000 \\
+3 & 4 & 41.93663414 & $3.224\times 10^{-6}$ & Gauss-Seidel & 1 & 1.072500 & 0.748375 \\
+4 & 8 & 41.93663091 & $1.233\times 10^{-10}$ & Gauss-Seidel & 2 & 1.184756 & 0.838677 \\
+5 & 16 & 41.93663091 & $2.842\times 10^{-14}$ & Referencia $\mathbf{x}^*$ & -- & 1.200000 & 0.850000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+En la plataforma web, cada módulo renderiza dos gráficos SVG en tiempo real (solución física/curvas superpuestas y convergencia de error en escala logarítmica), además de dos gráficos comparativos globales en la pestaña \textbf{Comparación 4$\times$3} (precisión logarítmica por módulo y tiempos de cómputo en milisegundos).
+
+% ============================================================================
+% 14 y 15. CONCLUSIONES DOBLES POR MÓDULO
+% ============================================================================
+\section{Conclusiones Numéricas y Conclusiones del Problema por Módulo}
+
+\subsection{Módulo 1: Detención de Emergencia de Cabinas}
+\begin{itemize}
+    \item \textbf{Conclusión Numérica:} RK4 mantiene errores inferiores a $1.3\times 10^{-8}$ aun con paso grueso ($h=0.4\text{ s}$) frente a $4.05\times 10^{-3}$ de RK2. Romberg alcanza precisión $10^{-14}$ en 5 niveles gracias a la extrapolación de Richardson. En el escenario de raíz múltiple ($v=v'=0$), Bisección no es aplicable por falta de cambio de signo y Newton-Raphson degrada a convergencia lineal (21 iteraciones).
+    \item \textbf{Conclusión del Problema:} Frente a menor capacidad de frenado y mayor velocidad inicial, el tiempo y la distancia de detención aumentan de $5.0\text{ s}$ ($15\text{ m}$) a $10.22\text{ s}$ ($41.94\text{ m}$), lo cual es crítico para dimensionar zonas de seguridad en estación. No pueden inferirse esfuerzos térmicos reales en frenos mecánicos sin datos de campo.
+\end{itemize}
+
+\subsection{Módulo 2: Deterioro Mecánico y Mantenimiento}
+\begin{itemize}
+    \item \textbf{Conclusión Numérica:} En matrices SPD bien condicionadas ($\kappa_2 < 10$), Gradiente Conjugado y LU logran precisión de máquina en menos operaciones que Jacobi y Gauss-Seidel. En la matriz Hilbert $6\times 6$ ($\kappa_2=1.49\times 10^7$), Jacobi diverge por su radio espectral ($\rho>1$), mientras LU converge pero revela un factor de amplificación de $7.03\times 10^6\times$ ante una perturbación de $10^{-4}$ en $\mathbf{b}$.
+    \item \textbf{Conclusión del Problema:} Un modelo de calibración mal condicionado produce coeficientes de desgaste sumamente sensibles al ruido de inspección, por lo que una predicción como $t^*=21.25\text{ meses}$ solo es confiable cuando la instrumentación garantiza matrices bien condicionadas; el modelo sintético no reemplaza inspecciones no destructivas reales.
+\end{itemize}
+
+\subsection{Módulo 3: Oscilaciones por Viento}
+\begin{itemize}
+    \item \textbf{Conclusión Numérica:} En ventanas largas cercanas a resonancia ($T=120\text{ s}$), RK2 acumula deriva de fase ($E_{\text{abs}}=5.50\times 10^{-2}$) frente a RK4 ($1.72\times 10^{-5}$). En el sistema rígido (\textit{stiff}, $k=450000\text{ N/m}$, $h=0.12\text{ s}$), RK2 supera su límite de estabilidad explícita y diverge en el paso 15, mientras RK4 permanece acotado.
+    \item \textbf{Conclusión del Problema:} Ráfagas armónicas próximas a la frecuencia natural ($1.58\text{ rad/s}$) amplifican la oscilación lateral hasta $2.81\text{ m}$ y elevan drásticamente la energía acumulada. Además, la explosión numérica de RK2 en el caso rígido demuestra un fallo del integrador y no un colapso físico de la cabina (cuya amplitud real es $0.05\text{ m}$).
+\end{itemize}
+
+\subsection{Módulo 4: Reconstrucción de Señales de Sensores}
+\begin{itemize}
+    \item \textbf{Conclusión Numérica:} En señales suaves con pocos nodos, Lagrange y Newton coinciden y alcanzan $\text{RMSE}=8.82\times 10^{-3}$; sin embargo, al aumentar a 15 nodos equiespaciados sobre la función de Runge, la interpolación polinomial global oscila severamente en los bordes ($\text{RMSE}=109.22$), mientras que los Splines Cúbicos Naturales se mantienen estables ($\text{RMSE}=1.77\times 10^{-3}$).
+    \item \textbf{Conclusión del Problema:} Para reconstruir pérdidas de paquetes en telemetría de sensores y detectar cruces de umbral de alerta, los splines cúbicos por tramos evitan picos artificiales que podrían disparar falsas alarmas; con ruido elevado ($\sigma=0.04$), cualquier interpolación exacta reproduce también el ruido, por lo que convendría suavizado en futuras mejoras.
+\end{itemize}
+
+% ============================================================================
+% 16, 17, 18 y 19. CONCLUSIÓN GLOBAL, LIMITACIONES, REFERENCIAS Y ANEXOS
+% ============================================================================
+\section{Conclusión Global Integradora}
+\textbf{SIMTELE-RISK} demuestra de forma verificable que la elección del método numérico y el control transversal de errores son inseparables del análisis ingenieril: ningún método es universalmente óptimo sin evaluar condicionamiento ($\kappa_2$), estabilidad explícita ($h\cdot\omega_0$), orden de convergencia y multiplicidad de raíces. La integración de cinco familias numéricas en precisión \texttt{float64} con persistencia completa en PostgreSQL garantiza reproducibilidad experimental, trazabilidad paso a paso y transparencia para la toma de decisiones académicas.
+
+\section{Limitaciones}
+\begin{itemize}[noitemsep]
+    \item Todos los parámetros físicos, señales y matrices son sintéticos; el sistema no consume telemetría real de \textit{Mi Teleférico}.
+    \item Los modelos físicos son unidimensionales o de parámetros concentrados (sin efectos aerodinámicos no lineales 3D ni fatiga de materiales por elementos finitos).
+    \item No se incluyen métodos implícitos (como RK implícito o BDF) para sistemas rígidos extremos ni regresión por mínimos cuadrados para señales altamente ruidosas.
+\end{itemize}
+
+\section{Referencias}
+\begin{enumerate}[noitemsep]
+    \item Burden, R. L., \& Faires, J. D. \textit{Análisis Numérico}. Cengage Learning.
+    \item Chapra, S. C., \& Canale, R. P. \textit{Métodos Numéricos para Ingenieros}. McGraw-Hill.
+    \item Trefethen, L. N., \& Bau, D. \textit{Numerical Linear Algebra}. SIAM.
+    \item Documentación oficial de FastAPI (\url{https://fastapi.tiangolo.com/}), SQLAlchemy (\url{https://www.sqlalchemy.org/}) y PostgreSQL 16 (\url{https://www.postgresql.org/docs/}).
+\end{enumerate}
+
+\section{Anexos y Enlaces del Proyecto}
+\begin{itemize}[noitemsep]
+    \item \textbf{Repositorio GitHub:} \url{https://github.com/AlejandroQuintelaAguilar/SIMTELE-RISK.git}
+    \item \textbf{Aplicación Web Desplegada (Vercel + Neon Postgres):} \url{https://simtele-risk-peach.vercel.app/}
+    \item \textbf{Healthcheck API en Producción:} \url{https://simtele-risk-peach.vercel.app/api/health}
+    \item \textbf{Esquema SQL y Orquestación:} \texttt{database/schema.sql}, \texttt{docker-compose.yml}, \texttt{vercel.json}, \texttt{api/index.py}.
+    \item \textbf{Pruebas Automatizadas:} \texttt{backend/tests/} (26 pruebas unitarias e integración verificadas con \texttt{pytest}).
+    \item \textbf{Guion de Video ($\le 3\text{ min}$):} \texttt{docs/guion\_video.tex} / \texttt{docs/guion\_video.pdf}.
+\end{itemize}
+
+\end{document}

@@ -5,6 +5,7 @@
 **SIMTELE-RISK** es una aplicación web integrada diseñada para formular, resolver, verificar y comparar problemas matemáticos aplicados a la ingeniería de transporte por cable mediante métodos numéricos clásicos, incorporando análisis transversal de teoría de errores y persistencia completa de experimentos.
 
 * **Repositorio GitHub:** [https://github.com/AlejandroQuintelaAguilar/SIMTELE-RISK.git](https://github.com/AlejandroQuintelaAguilar/SIMTELE-RISK.git)
+* **Aplicación Web en Producción (Vercel + Neon):** [https://simtele-risk-peach.vercel.app/](https://simtele-risk-peach.vercel.app/)
 * **Requerimientos:** [REQUIREMENTS.md](./REQUIREMENTS.md)
 * **Instrucciones de ejecución:** [INSTRUCCIONES.md](./INSTRUCCIONES.md)
 
@@ -134,6 +135,7 @@ $env:PYTHONPATH="backend"
 * `GET /api/casos` — Listado de los 4 módulos y sus 12 escenarios predefinidos.
 * `POST /api/modulos/{caso_codigo}/ejecutar` — Ejecuta cualquiera de los 4 módulos (`MOD1_DETENCION`, `MOD2_DETERIORO`, `MOD3_OSCILACIONES`, `MOD4_SENSORES`), persiste en BD y retorna resultados + 2 gráficos.
 * `GET /api/simulaciones` / `GET /api/simulaciones/{id}` / `POST /api/simulaciones/{id}/relanzar` — Historial persistente, recuperación completa y verificación por relanzamiento.
+* `GET /api/comparacion-global` — Matriz comparativa $4 \times 3$ entre los cuatro módulos y sus tres escenarios.
 
 ---
 
@@ -149,7 +151,7 @@ Para validar el requisito de trazabilidad de experimentos:
 
 ## 5. Equipo y Menciones
 
-* **Integrante 1:** [Nombre Completo] — Mención: [Ej. Ingeniería de Software / Sistemas]
-* **Integrante 2:** [Nombre Completo] — Mención: [Ej. Ciencias de la Computación / Telemática]
-* **Integrante 3:** [Nombre Completo] — Mención: [...]
-* **Integrante 4:** [Nombre Completo] — Mención: [...]
+* **Alejandro Quintela Aguilar** — Mención: Desarrollo de Software
+* **Dayana Karen Rodriguez Chalco** — Mención: Ingeniería de Sistemas
+* **Caleb Mendoza Calderon** — Mención: Desarrollo de Software
+* **Aaron Osvaldo Calzada Nina** — Mención: Desarrollo de Software

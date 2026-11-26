@@ -3,6 +3,7 @@
 > Guía paso a paso para configurar y ejecutar **SIMTELE-RISK**. Este documento se irá ampliando conforme se implementen el Backend y el Frontend en los siguientes pasos.
 
 **Repositorio GitHub:** [https://github.com/AlejandroQuintelaAguilar/SIMTELE-RISK.git](https://github.com/AlejandroQuintelaAguilar/SIMTELE-RISK.git)
+**Aplicación Web Pública (Vercel):** [https://simtele-risk-peach.vercel.app/](https://simtele-risk-peach.vercel.app/)
 
 ---
 
