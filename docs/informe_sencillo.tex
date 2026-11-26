@@ -90,7 +90,7 @@ El flujo de trabajo dentro del programa sigue cuatro pasos sencillos:
 \textbf{Problema a resolver:} Saber en cuántos segundos y cuántos metros se detiene una cabina al activar el freno de emergencia.
 \begin{itemize}[noitemsep]
     \item \textbf{Qué métodos usamos:} Runge-Kutta (de 2.º y 4.º orden) para simular la velocidad y posición paso a paso; Trapecio, Simpson 1/3 y Romberg para medir la distancia total de frenado; y Bisección, Newton-Raphson y Secante para hallar el instante exacto en que la cabina llega a velocidad cero.
-    \item \textbf{Cómo nos ayudaron a mejorar:} Cuando el paso de tiempo es grande (escenario \textbf{ESTRÉS}), Runge-Kutta de 2.º orden pierde precisión, mientras que \textbf{Runge-Kutta de 4.º orden} mantiene el error prácticamente despreciable. Además, \textbf{Romberg} aprovecha cálculos simples del Trapecio y los refina automáticamente hasta obtener la distancia exacta ($41.94\text{ m}$) sin necesidad de dividir el tiempo en miles de partes.
+    \item \textbf{Cómo nos ayudaron a mejorar:} Cuando el paso de tiempo es grande (escenario \textbf{ESTRÉS}), Runge-Kutta de 2.º orden pierde precisión, mientras que \textbf{Runge-Kutta de 4.º orden} mantiene el error prácticamente despreciable. Además, \textbf{Romberg} aprovecha cálculos simples del Trapecio y los refina automáticamente hasta obtener la distancia exacta (41.94 m) sin necesidad de dividir el tiempo en miles de partes.
     \item \textbf{Aprendizaje clave:} En frenados suaves donde la curva apenas toca el cero (caso mal condicionado), Bisección no puede usarse porque no hay cambio de signo y Newton-Raphson necesita muchas más iteraciones; esto nos enseñó a no confiar en un solo método de búsqueda.
 \end{itemize}
 \end{resumenbox}
@@ -108,7 +108,7 @@ El flujo de trabajo dentro del programa sigue cuatro pasos sencillos:
 \textbf{Problema a resolver:} Medir cuánto se balancea una cabina ante ráfagas de viento y cuánta energía de movimiento se acumula.
 \begin{itemize}[noitemsep]
     \item \textbf{Qué métodos usamos:} Runge-Kutta de 2.º y 4.º orden para seguir el vaivén de la cabina en el tiempo, junto con Trapecio, Simpson 1/3 y Romberg para sumar la energía acumulada.
-    \item \textbf{Cómo nos ayudaron a mejorar:} En simulaciones largas de 2 minutos (\textbf{ESTRÉS}), \textbf{Runge-Kutta 4} evita que la onda se desfase y calcula con fidelidad la amplitud máxima ($2.81\text{ m}$), mientras que el de 2.º orden va acumulando error.
+    \item \textbf{Cómo nos ayudaron a mejorar:} En simulaciones largas de 2 minutos (\textbf{ESTRÉS}), \textbf{Runge-Kutta 4} evita que la onda se desfase y calcula con fidelidad la amplitud máxima (2.81 m), mientras que el de 2.º orden va acumulando error.
     \item \textbf{Aprendizaje clave:} Al simular un cable muy rígido con pasos de tiempo grandes (\textbf{MAL CONDICIONADO}), Runge-Kutta 2 se descontroló por completo y arrojó valores imposibles, mientras que Runge-Kutta 4 se mantuvo estable. Esto nos ayudó a demostrar que una explosión en pantalla puede ser un error del método elegido y no un accidente real de la cabina.
 \end{itemize}
 \end{resumenbox}
