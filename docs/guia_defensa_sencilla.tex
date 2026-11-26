@@ -1,0 +1,108 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{booktabs}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+
+\geometry{margin=2.0cm}
+
+\definecolor{primary}{RGB}{15,85,150}
+\definecolor{softbg}{RGB}{242,247,252}
+
+\newtcolorbox{tarjeta}[1]{%
+  colback=softbg,
+  colframe=primary,
+  boxrule=0.6pt,
+  arc=2pt,
+  title=\textbf{#1},
+  fonttitle=\small,
+  left=7pt,right=7pt,top=5pt,bottom=5pt
+}
+
+\title{\textbf{Guía Sencilla para la Defensa Presencial} \\
+\large SIMTELE-RISK — Qué Hacer en Pantalla y Qué Explicar con Palabras Claras}
+\author{Alejandro Quintela Aguilar · Dayana Karen Rodriguez Chalco \\
+Caleb Mendoza Calderon · Aaron Osvaldo Calzada Nina}
+\date{Noviembre 2026}
+
+\begin{document}
+\maketitle
+
+\noindent\textbf{Web en vivo:} \url{https://simtele-risk-peach.vercel.app/} \quad | \quad
+\textbf{GitHub:} \url{https://github.com/AlejandroQuintelaAguilar/SIMTELE-RISK.git}
+
+\section{Cómo Empezar la Defensa (30 segundos)}
+Antes de pasar a cada integrante, uno de ustedes abre \url{https://simtele-risk-peach.vercel.app/} en la pantalla \textbf{Inicio} y dice:
+\begin{quote}
+\textit{``SIMTELE-RISK es una aplicación web educativa inspirada en Mi Teleférico. Nos permite simular cuatro problemas de ingeniería —frenado, desgaste, viento y sensores— usando métodos numéricos para comparar cuál resuelve mejor cada situación, medir su error y guardar todo en PostgreSQL.''}
+\end{quote}
+
+\section{Turno de Cada Integrante (Qué Hacer y Qué Decir)}
+
+\begin{tarjeta}{1. Alejandro Quintela Aguilar — Desarrollo de Software (Módulo 1: Frenado)}
+\begin{itemize}[noitemsep]
+    \item \textbf{Tu aporte en el proyecto:} Construí la arquitectura que conecta la página web con el servidor en Python y la base de datos PostgreSQL en Docker y Vercel, además de las pruebas automáticas.
+    \item \textbf{Qué hacer en vivo:} Entra a \textbf{Mód. 1: Detención}, deja \textbf{NORMAL}, cambia la velocidad \texttt{v0} de \texttt{6.0} a \texttt{8.0} (o el paso \texttt{h} a \texttt{0.4}) y haz clic en \textbf{Ejecutar y Guardar Simulación}.
+    \item \textbf{Cómo explicarlo sencillo:}
+    \begin{itemize}[noitemsep]
+        \item \textit{Por qué sirven los métodos:} Para calcular cómo frena la cabina segundo a segundo, \textbf{Runge-Kutta 4} nos da mucha más precisión que el de segundo orden cuando usamos pasos grandes. Para sumar la distancia total, \textbf{Romberg} refina automáticamente los cálculos del Trapecio para darnos un resultado casi exacto sin hacer miles de cuentas. Y con \textbf{Newton-Raphson}, \textbf{Bisección} y \textbf{Secante} encontramos el segundo exacto en que se detiene.
+        \item \textit{Resultado práctico:} Al subir la velocidad inicial, la distancia de frenado crece rápido (de 15 m a casi 27 m), lo cual sirve para verificar si hay espacio suficiente al llegar a la estación.
+    \end{itemize}
+\end{itemize}
+\end{tarjeta}
+
+\begin{tarjeta}{2. Dayana Karen Rodriguez Chalco — Ingeniería de Sistemas (Módulo 2 + Historial)}
+\begin{itemize}[noitemsep]
+    \item \textbf{Tu aporte en el proyecto:} Diseñé la base de datos de 6 tablas para guardar cada experimento sin perder información, el panel de \textbf{Comparación 4$\times$3} y el seguimiento de resultados.
+    \item \textbf{Qué hacer en vivo:} Entra a \textbf{Mód. 2: Deterioro}, cambia \texttt{D\_umbral} de \texttt{0.80} a \texttt{0.70} y pulsa \textbf{Ejecutar y Guardar Simulación}. Luego entra a \textbf{Historial}, busca esa simulación, pulsa \textbf{Recuperar} y después \textbf{Relanzar}.
+    \item \textbf{Cómo explicarlo sencillo:}
+    \begin{itemize}[noitemsep]
+        \item \textit{Por qué sirven los métodos:} Primero usamos \textbf{LU} y \textbf{Gradiente Conjugado} (junto con \textbf{Jacobi} y \textbf{Gauss-Seidel}) para ajustar el modelo de desgaste, y luego métodos de raíces para predecir en qué mes habrá que hacer mantenimiento.
+        \item \textit{Resultado práctico:} Si bajamos el umbral de alerta, el sistema nos avisa que la inspección debe adelantarse. Además, al usar \textbf{Recuperar} y \textbf{Relanzar} en Historial demostramos que todo queda guardado en PostgreSQL y se repite de forma idéntica.
+    \end{itemize}
+\end{itemize}
+\end{tarjeta}
+
+\begin{tarjeta}{3. Caleb Mendoza Calderon — Desarrollo de Software (Módulo 3: Viento)}
+\begin{itemize}[noitemsep]
+    \item \textbf{Tu aporte en el proyecto:} Implementé los métodos de sistemas lineales, el cálculo transversal de errores en todo el proyecto y la interfaz gráfica web con los gráficos interactivos.
+    \item \textbf{Qué hacer en vivo:} Entra a \textbf{Mód. 3: Viento}, prueba primero \textbf{MAL CONDICIONADO} para mostrar la alerta en Runge-Kutta 2, y luego en \textbf{NORMAL} cambia \texttt{F0} a \texttt{400} y \texttt{omega} a \texttt{1.55} y ejecuta.
+    \item \textbf{Cómo explicarlo sencillo:}
+    \begin{itemize}[noitemsep]
+        \item \textit{Por qué sirven los métodos:} Usamos \textbf{Runge-Kutta 2 y 4} para dibujar el balanceo de la cabina, y \textbf{Trapecio}, \textbf{Simpson} y \textbf{Romberg} para medir la energía acumulada del movimiento.
+        \item \textit{Resultado práctico:} En el caso difícil (\textit{Mal Condicionado}), \textbf{Runge-Kutta 2} se descontrola y muestra valores enormes por usar un paso muy grande, mientras \textbf{Runge-Kutta 4} sigue estable. Esto demuestra que ese error es del método numérico y no un accidente real. Al acercar la frecuencia del viento (\texttt{omega}) a la del sistema, vemos el efecto de resonancia donde la cabina oscila mucho más.
+    \end{itemize}
+\end{tarjeta}
+
+\begin{tarjeta}{4. Aaron Osvaldo Calzada Nina — Desarrollo de Software (Módulo 4: Sensores)}
+\begin{itemize}[noitemsep]
+    \item \textbf{Tu aporte en el proyecto:} Programé desde cero los algoritmos de raíces, interpolación, integración y ecuaciones diferenciales, comparando todos contra respuestas exactas conocidas.
+    \item \textbf{Qué hacer en vivo:} Entra a \textbf{Mód. 4: Sensores}, ejecuta \textbf{MAL CONDICIONADO} para mostrar el gráfico de curvas, y luego en \textbf{ESTRÉS} cambia \texttt{ruido\_sigma} de \texttt{0.04} a \texttt{0.08} y ejecuta.
+    \item \textbf{Cómo explicarlo sencillo:}
+    \begin{itemize}[noitemsep]
+        \item \textit{Por qué sirven los métodos:} Cuando se pierden datos de un sensor, probamos rellenarlos con \textbf{Lagrange}, \textbf{Newton} y \textbf{Splines Cúbicos}, y luego buscamos en qué segundo cruzan el umbral de alerta.
+        \item \textit{Resultado práctico:} Cuando hay muchos puntos seguidos en una curva exigente, Lagrange y Newton generan picos gigantes en los extremos (error mayor a 100), mientras que los \textbf{Splines Cúbicos} conectan los datos suavemente y reconstruyen los puntos perdidos con error mínimo, evitando falsas alarmas.
+    \end{itemize}
+\end{itemize}
+\end{tarjeta}
+
+\section{Respuestas Sencillas a Preguntas Frecuentes del Docente}
+\begin{enumerate}[noitemsep]
+    \item \textbf{¿Cuál fue la mayor ventaja de usar Romberg y RK4?}\\
+    Que nos dieron resultados mucho más exactos sin necesidad de hacer el cálculo demasiado lento ni dividir el tiempo en pasos minúsculos.
+    \item \textbf{¿Es lo mismo un sistema ``mal condicionado'' que un método que ``no converge''?}\\
+    No. Que un método no converja (como Jacobi en Hilbert o RK2 en el caso rígido) es un fallo del algoritmo elegido; en cambio, un problema mal condicionado es muy sensible a cualquier pequeño error en los datos de entrada, incluso usando un método exacto como LU.
+    \item \textbf{¿Qué pasa si un cálculo intenta dividir entre cero al sacar el error porcentual?}\\
+    El programa detecta valores cercanos a cero y usa un piso mínimo automático ($10^{-15}$) para evitar caídas o errores matemáticos.
+    \item \textbf{¿Los resultados sirven para diagnosticar el teleférico real de La Paz?}\\
+    No. Es un simulador académico con datos sintéticos; nos sirve para estudiar métodos numéricos y tendencias generales, no para reemplazar mediciones reales en campo.
+\end{enumerate}
+
+\end{document}
