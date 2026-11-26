@@ -1,0 +1,151 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{booktabs}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+
+\geometry{margin=2.1cm}
+
+\definecolor{primary}{RGB}{15,85,150}
+\definecolor{softbg}{RGB}{244,248,252}
+
+\newtcolorbox{resumenbox}[1]{%
+  colback=softbg,
+  colframe=primary,
+  boxrule=0.6pt,
+  arc=2pt,
+  title=\textbf{#1},
+  fonttitle=\small,
+  left=7pt,right=7pt,top=5pt,bottom=5pt
+}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{1.5cm}
+    {\Large \textbf{INFORME PRÁCTICO DE RESULTADOS — MÉTODOS NUMÉRICOS}\par}
+    \vspace{0.8cm}
+    {\Huge \textbf{\textcolor{primary}{SIMTELE-RISK}}\par}
+    \vspace{0.4cm}
+    {\Large Cómo los Métodos Numéricos Resuelven y Mejoran el Análisis de Riesgos en Transporte por Cable\par}
+    \vspace{1.2cm}
+    \begin{tcolorbox}[colback=softbg,colframe=primary,width=0.9\textwidth]
+        \centering
+        \textbf{Contexto Académico:} Simulador educativo inspirado en \textit{Mi Teleférico} (La Paz, Bolivia). Todos los datos y escenarios son sintéticos con fines de estudio y no representan fallas ni operaciones reales.
+    \end{tcolorbox}
+    \vspace{1.4cm}
+
+    \textbf{\large Equipo y Menciones}\\[0.4cm]
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Integrante} & \textbf{Mención} \\
+        \midrule
+        Alejandro Quintela Aguilar & Desarrollo de Software \\
+        Dayana Karen Rodriguez Chalco & Ingeniería de Sistemas \\
+        Caleb Mendoza Calderon & Desarrollo de Software \\
+        Aaron Osvaldo Calzada Nina & Desarrollo de Software \\
+        \bottomrule
+    \end{tabular}
+
+    \vfill
+    \textbf{Aplicación Web en Vivo:} \url{https://simtele-risk-peach.vercel.app/}\\
+    \textbf{Repositorio GitHub:} \url{https://github.com/AlejandroQuintelaAguilar/SIMTELE-RISK.git}\\[0.5cm]
+    {\large Noviembre 2026\par}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ============================================================================
+\section{¿Qué es SIMTELE-RISK y para qué sirve?}
+% ============================================================================
+\textbf{SIMTELE-RISK} es una aplicación web diseñada para responder preguntas concretas de seguridad y mantenimiento en un sistema de teleférico usando escenarios simulados. En lugar de hacer cálculos aislados en papel, integramos en una sola plataforma cuatro problemas reales de ingeniería y probamos distintos métodos numéricos para descubrir cuál funciona mejor en condiciones normales, bajo exigencia (estrés) y en situaciones difíciles (mal condicionadas).
+
+Para que cualquier prueba sea verificable, toda simulación que se ejecuta en la web queda guardada automáticamente en una base de datos \textbf{PostgreSQL} (en Docker localmente y en Neon/Vercel en internet). Así, cualquier integrante o evaluador puede abrir el \textbf{Historial}, recuperar una corrida anterior, revisar sus gráficos o volver a ejecutarla para confirmar que da exactamente el mismo resultado.
+
+% ============================================================================
+\section{Cómo se usó la Plataforma en la Práctica}
+% ============================================================================
+El flujo de trabajo dentro del programa sigue cuatro pasos sencillos:
+\begin{enumerate}[noitemsep]
+    \item \textbf{Elegir un problema (Inicio):} Seleccionar una de las 4 tarjetas: \textit{Detención de Emergencia}, \textit{Deterioro Mecánico}, \textit{Oscilaciones por Viento} o \textit{Reconstrucción de Sensores}.
+    \item \textbf{Probar escenarios y cambiar parámetros:} Seleccionar \textbf{NORMAL}, \textbf{ESTRÉS} o \textbf{MAL CONDICIONADO}, o editar valores en pantalla (como la velocidad inicial, la fuerza del viento, el ruido del sensor o el umbral de desgaste).
+    \item \textbf{Analizar gráficos y errores:} Al pulsar \textbf{Ejecutar y Guardar Simulación}, el sistema muestra dos gráficos comparativos, una tabla con el error de cada método y dos conclusiones separadas: qué pasó con los algoritmos y qué significa eso para el teleférico.
+    \item \textbf{Comparar todo y verificar persistencia:} En \textbf{Comparación 4$\times$3} se visualizan los 12 escenarios juntos, y en \textbf{Historial} se recupera o relanza cualquier simulación guardada.
+\end{enumerate}
+
+% ============================================================================
+\section{Cómo los Métodos Numéricos Ayudaron a Resolver Cada Problema}
+% ============================================================================
+
+\begin{resumenbox}{Módulo 1: Detención de Emergencia de Cabinas}
+\textbf{Problema a resolver:} Saber en cuántos segundos y cuántos metros se detiene una cabina al activar el freno de emergencia.
+\begin{itemize}[noitemsep]
+    \item \textbf{Qué métodos usamos:} Runge-Kutta (de 2.º y 4.º orden) para simular la velocidad y posición paso a paso; Trapecio, Simpson 1/3 y Romberg para medir la distancia total de frenado; y Bisección, Newton-Raphson y Secante para hallar el instante exacto en que la cabina llega a velocidad cero.
+    \item \textbf{Cómo nos ayudaron a mejorar:} Cuando el paso de tiempo es grande (escenario \textbf{ESTRÉS}), Runge-Kutta de 2.º orden pierde precisión, mientras que \textbf{Runge-Kutta de 4.º orden} mantiene el error prácticamente despreciable. Además, \textbf{Romberg} aprovecha cálculos simples del Trapecio y los refina automáticamente hasta obtener la distancia exacta ($41.94\text{ m}$) sin necesidad de dividir el tiempo en miles de partes.
+    \item \textbf{Aprendizaje clave:} En frenados suaves donde la curva apenas toca el cero (caso mal condicionado), Bisección no puede usarse porque no hay cambio de signo y Newton-Raphson necesita muchas más iteraciones; esto nos enseñó a no confiar en un solo método de búsqueda.
+\end{itemize}
+\end{resumenbox}
+
+\begin{resumenbox}{Módulo 2: Deterioro Mecánico y Mantenimiento}
+\textbf{Problema a resolver:} Calibrar el desgaste acumulado de los tramos del cable y anticipar en qué mes alcanzará el nivel crítico de inspección.
+\begin{itemize}[noitemsep]
+    \item \textbf{Qué métodos usamos:} Jacobi, Gauss-Seidel, Factorización LU y Gradiente Conjugado para calibrar los parámetros del sistema; y Bisección, Newton-Raphson y Secante para predecir el mes en que el desgaste supera el umbral.
+    \item \textbf{Cómo nos ayudaron a mejorar:} En condiciones normales y de estrés (12 tramos simultáneos), \textbf{Gradiente Conjugado} y \textbf{LU} encuentran la solución con gran rapidez y exactitud frente a los métodos iterativos más lentos como Jacobi.
+    \item \textbf{Aprendizaje clave:} En el escenario \textbf{MAL CONDICIONADO}, aprendimos a distinguir dos fallos distintos: por un lado, Jacobi dejó de converger; por otro, aunque LU sí encontró respuesta, el sistema era tan sensible que un error diminuto en los datos de entrada se amplificó millones de veces en el resultado. Eso advierte cuándo se necesitan mejores mediciones antes de programar mantenimiento.
+\end{itemize}
+\end{resumenbox}
+
+\begin{resumenbox}{Módulo 3: Oscilaciones por Viento}
+\textbf{Problema a resolver:} Medir cuánto se balancea una cabina ante ráfagas de viento y cuánta energía de movimiento se acumula.
+\begin{itemize}[noitemsep]
+    \item \textbf{Qué métodos usamos:} Runge-Kutta de 2.º y 4.º orden para seguir el vaivén de la cabina en el tiempo, junto con Trapecio, Simpson 1/3 y Romberg para sumar la energía acumulada.
+    \item \textbf{Cómo nos ayudaron a mejorar:} En simulaciones largas de 2 minutos (\textbf{ESTRÉS}), \textbf{Runge-Kutta 4} evita que la onda se desfase y calcula con fidelidad la amplitud máxima ($2.81\text{ m}$), mientras que el de 2.º orden va acumulando error.
+    \item \textbf{Aprendizaje clave:} Al simular un cable muy rígido con pasos de tiempo grandes (\textbf{MAL CONDICIONADO}), Runge-Kutta 2 se descontroló por completo y arrojó valores imposibles, mientras que Runge-Kutta 4 se mantuvo estable. Esto nos ayudó a demostrar que una explosión en pantalla puede ser un error del método elegido y no un accidente real de la cabina.
+\end{itemize}
+\end{resumenbox}
+
+\begin{resumenbox}{Módulo 4: Reconstrucción de Señales de Sensores}
+\textbf{Problema a resolver:} Recuperar datos perdidos cuando fallan paquetes de telemetría de los sensores y detectar en qué momento se supera una alerta.
+\begin{itemize}[noitemsep]
+    \item \textbf{Qué métodos usamos:} Interpolación de Lagrange, Newton y Splines Cúbicos para rellenar los puntos ocultos; y búsqueda de raíces sobre la curva reconstruida para detectar el cruce de alerta.
+    \item \textbf{Cómo nos ayudaron a mejorar:} En el escenario \textbf{MAL CONDICIONADO} con muchos puntos espaciados por igual, los polinomios únicos de Lagrange y Newton crearon picos enormes en los extremos (error superior a $100$), mientras que los \textbf{Splines Cúbicos} unieron los datos por tramos suaves y redujeron el error a milésimas ($0.0018$).
+    \item \textbf{Aprendizaje clave:} Usar splines evita falsas alarmas por oscilaciones matemáticas artificiales al reconstruir lecturas faltantes de sensores.
+\end{itemize}
+\end{resumenbox}
+
+% ============================================================================
+\section{Resumen Comparativo: Qué Método Conviene en Cada Caso}
+% ============================================================================
+
+\begin{table}[h!]
+\centering
+\caption{Resumen práctico de utilidad y mejora obtenida con los métodos numéricos.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{p{3.2cm}p{4.3cm}p{4.3cm}p{4.3cm}}
+\toprule
+\textbf{Problema} & \textbf{Método más confiable} & \textbf{Qué problema resolvió} & \textbf{Precaución descubierta} \\
+\midrule
+1. Frenado de emergencia & RK4 + Romberg + Newton-Raphson & Calculó tiempo y distancia exacta con pasos grandes. & Raíces dobles frenan a Newton y bloquean Bisección. \\
+2. Desgaste y mantenimiento & LU (pivoteo) / Gradiente Conjugado & Calibró hasta 12 tramos rápido y predijo el mes crítico. & Matrices sensibles amplifican cualquier ruido de entrada. \\
+3. Oscilaciones por viento & RK4 + Simpson / Romberg & Mantuvo estabilidad en 120 s de ráfagas y resonancia. & RK2 se vuelve inestable con pasos grandes en sistemas rígidos. \\
+4. Sensores perdidos & Splines Cúbicos Naturales & Reconstruyó puntos faltantes sin picos artificiales. & Polinomios globales (Lagrange/Newton) oscilan en los bordes. \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+% ============================================================================
+\section{Conclusión General}
+% ============================================================================
+El desarrollo de \textbf{SIMTELE-RISK} nos permitió comprobar en la práctica que los métodos numéricos no son solo teoría: elegir el algoritmo adecuado (como \textbf{RK4} frente a RK2, \textbf{Romberg} frente a Trapecio simple, o \textbf{Splines Cúbicos} frente a un polinomio de alto grado) marca la diferencia entre obtener una respuesta confiable o caer en falsas alarmas e inestabilidades. Al combinar estos cálculos con un control constante de errores y almacenamiento permanente en PostgreSQL, logramos una herramienta clara, verificable y útil para analizar decisiones de ingeniería.
+
+\end{document}
