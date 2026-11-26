@@ -13,6 +13,7 @@ from app.core.database import active_db_backend, get_db
 from app.models.db_models import CasoEstudio
 from app.models.schemas import (
     CasoEstudioOut,
+    GlobalComparisonResponseOut,
     HealthOut,
     IterationOut,
     MethodResultOut,
@@ -25,6 +26,7 @@ from app.models.schemas import (
     UnifiedModuleResponse,
 )
 from app.modules.modulo2_s1 import run_modulo2_scenario
+from app.services.comparison import build_global_comparison
 from app.services.persistence import (
     execute_and_persist_simulation,
     get_saved_simulation,
@@ -164,3 +166,9 @@ def relanzar_simulacion(
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     return RerunResponseOut.model_validate(data)
+
+
+@router.get("/comparacion-global", response_model=GlobalComparisonResponseOut)
+def obtener_comparacion_global() -> GlobalComparisonResponseOut:
+    """Ejecuta y consolida la matriz comparativa 4x3 entre módulos y escenarios."""
+    return GlobalComparisonResponseOut.model_validate(build_global_comparison())

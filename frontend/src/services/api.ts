@@ -101,6 +101,32 @@ export interface RerunResponse {
   comparacion_metodos: RerunComparisonMethod[];
 }
 
+export interface GlobalComparisonRow {
+  modulo_index: number;
+  caso_codigo: CasoCodigo;
+  modulo_nombre: string;
+  escenario: ScenarioType;
+  nombre_descriptivo: string;
+  total_metodos: number;
+  metodos_convergentes: number;
+  metodos_advertencia: number;
+  mejor_metodo: string;
+  mejor_error_abs: number | null;
+  mejor_error_rel: number | null;
+  alerta_o_mayor_error: string;
+  tiempo_total_ms: number;
+  metrica_clave: string;
+  interpretacion_numerica: string;
+  interpretacion_problema: string;
+}
+
+export interface GlobalComparisonResponse {
+  total_modulos: number;
+  total_escenarios: number;
+  filas: GlobalComparisonRow[];
+  graficos: ChartPayload[];
+}
+
 const API_BASE = "/api";
 
 export async function fetchHealth(): Promise<{
@@ -179,6 +205,14 @@ export async function relanzarSimulacion(
   });
   if (!res.ok) {
     throw new Error(`Error al relanzar simulación #${simulacionId} (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function fetchGlobalComparison(): Promise<GlobalComparisonResponse> {
+  const res = await fetch(`${API_BASE}/comparacion-global`);
+  if (!res.ok) {
+    throw new Error(`Error al cargar comparación global (${res.status})`);
   }
   return res.json();
 }

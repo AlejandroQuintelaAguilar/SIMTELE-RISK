@@ -70,3 +70,18 @@ def test_persistence_save_retrieve_and_rerun() -> None:
         rerun_data = rerun_resp.json()
         assert rerun_data["coincidencia_exacta"] is True
         assert rerun_data["diferencia_maxima"] <= 1e-12
+
+
+def test_global_comparison_endpoint() -> None:
+    """Verifica el Panel General de Comparación 4x3 en GET /api/comparacion-global."""
+    with TestClient(app) as client:
+        resp = client.get("/api/comparacion-global")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["total_modulos"] == 4
+        assert data["total_escenarios"] == 12
+        assert len(data["filas"]) == 12
+        assert len(data["graficos"]) == 2
+        for fila in data["filas"]:
+            assert len(fila["interpretacion_numerica"]) > 10
+            assert len(fila["interpretacion_problema"]) > 10

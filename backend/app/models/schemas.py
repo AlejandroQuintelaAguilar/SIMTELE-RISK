@@ -207,3 +207,33 @@ class RerunResponseOut(BaseModel):
     diferencia_maxima: float
     coincidencia_exacta: bool
     comparacion_metodos: list[RerunComparisonMethodOut]
+
+
+class GlobalComparisonRowOut(BaseModel):
+    """Fila de la matriz comparativa global 4x3."""
+
+    modulo_index: int
+    caso_codigo: str
+    modulo_nombre: str
+    escenario: Literal["NORMAL", "ESTRES", "MAL_CONDICIONADO"]
+    nombre_descriptivo: str
+    total_metodos: int
+    metodos_convergentes: int
+    metodos_advertencia: int
+    mejor_metodo: str
+    mejor_error_abs: float | None = None
+    mejor_error_rel: float | None = None
+    alerta_o_mayor_error: str
+    tiempo_total_ms: float
+    metrica_clave: str
+    interpretacion_numerica: str
+    interpretacion_problema: str
+
+
+class GlobalComparisonResponseOut(BaseModel):
+    """Respuesta consolidada del panel general de comparación."""
+
+    total_modulos: int
+    total_escenarios: int
+    filas: list[GlobalComparisonRowOut]
+    graficos: list[ChartPayloadOut]

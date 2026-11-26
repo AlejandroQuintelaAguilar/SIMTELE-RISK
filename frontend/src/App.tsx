@@ -9,8 +9,9 @@ import {
 import { HomePage } from "./pages/HomePage";
 import { ModuleWorkspacePage } from "./pages/ModuleWorkspacePage";
 import { HistoryPage } from "./pages/HistoryPage";
+import { ComparisonPage } from "./pages/ComparisonPage";
 
-type ViewTab = "inicio" | CasoCodigo | "historial";
+type ViewTab = "inicio" | CasoCodigo | "comparacion" | "historial";
 
 const MODULE_TABS: { codigo: CasoCodigo; short: string }[] = [
   { codigo: "MOD1_DETENCION", short: "Mód. 1: Detención" },
@@ -90,6 +91,12 @@ export function App() {
             </button>
           ))}
           <button
+            className={`btn ${tab === "comparacion" ? "btn-primary" : ""}`}
+            onClick={() => setTab("comparacion")}
+          >
+            Comparación 4×3
+          </button>
+          <button
             className={`btn ${tab === "historial" ? "btn-primary" : ""}`}
             onClick={() => setTab("historial")}
           >
@@ -106,6 +113,8 @@ export function App() {
             error={error}
             onOpenModule={openModule}
           />
+        ) : tab === "comparacion" ? (
+          <ComparisonPage onOpenModule={openModule} />
         ) : tab === "historial" ? (
           <HistoryPage onOpenSimulation={handleRecoveredSimulation} />
         ) : activeCaso ? (
