@@ -1,0 +1,164 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+
+\geometry{margin=2.0cm}
+
+\definecolor{primary}{RGB}{15,85,150}
+\definecolor{softbg}{RGB}{242,247,252}
+
+\newtcolorbox{ficha}[1]{%
+  colback=softbg,
+  colframe=primary,
+  boxrule=0.6pt,
+  arc=2pt,
+  title=\textbf{#1},
+  fonttitle=\small,
+  left=7pt,right=7pt,top=5pt,bottom=5pt
+}
+
+\title{\textbf{Guía de Estudio y Defensa Presencial} \\
+\large SIMTELE-RISK — Parámetros de Prueba, Roles por Mención y Preguntas Clave}
+\author{Alejandro Quintela Aguilar · Dayana Karen Rodriguez Chalco \\
+Caleb Mendoza Calderon · Aaron Osvaldo Calzada Nina}
+\date{Noviembre 2026}
+
+\begin{document}
+\maketitle
+
+\noindent\textbf{Aplicación Web:} \url{https://simtele-risk-peach.vercel.app/} \quad | \quad
+\textbf{Repositorio:} \url{https://github.com/AlejandroQuintelaAguilar/SIMTELE-RISK.git}
+
+\tableofcontents
+\newpage
+
+% ============================================================================
+\section{Reparto de Defensa en Vivo por Integrante y Mención}
+% ============================================================================
+
+\begin{ficha}{1. Alejandro Quintela Aguilar — Mención: Desarrollo de Software (Módulo 1)}
+\begin{itemize}[noitemsep]
+    \item \textbf{Aporte desde la mención:} Arquitectura desacoplada en 3 capas (React + FastAPI + PostgreSQL), diseño de endpoints REST, contenerización con Docker Compose, despliegue en Vercel + Neon Postgres y suite \texttt{pytest} (26/26).
+    \item \textbf{Acción en vivo:} Ir a \textbf{Mód. 1: Detención} $\rightarrow$ escenario \textbf{NORMAL} $\rightarrow$ cambiar \texttt{v0} de \texttt{6.0} a \texttt{8.0} (o subir \texttt{h} de \texttt{0.05} a \texttt{0.4}) $\rightarrow$ pulsar \textbf{Ejecutar y Guardar Simulación}.
+    \item \textbf{Qué explicar:}
+    \begin{itemize}[noitemsep]
+        \item \textit{Numérico:} RK4 ($O(h^4)$) conserva alta precisión aun al subir \texttt{h}, frente a RK2 Heun ($O(h^2)$). Romberg refina Trapecio con extrapolación de Richardson llegando a error $\sim 10^{-14}$.
+        \item \textit{Problema:} Al subir $v_0$ de $6$ a $8\text{ m/s}$, la distancia de frenado crece cuadráticamente (de $15.00\text{ m}$ a $26.67\text{ m}$), lo que obliga a ampliar márgenes de seguridad al entrar a estación.
+    \end{itemize}
+\end{itemize}
+\end{ficha}
+
+\begin{ficha}{2. Dayana Karen Rodriguez Chalco — Mención: Ingeniería de Sistemas (Módulo 2 + BD/Historial)}
+\begin{itemize}[noitemsep]
+    \item \textbf{Aporte desde la mención:} Diseño del DER de 6 tablas (\texttt{database/schema.sql}), trazabilidad completa de simulaciones, Panel General de Comparación $4\times 3$ y análisis sistémico de sensibilidad.
+    \item \textbf{Acción en vivo:} Ir a \textbf{Mód. 2: Deterioro} $\rightarrow$ escenario \textbf{NORMAL} $\rightarrow$ cambiar \texttt{D\_umbral} de \texttt{0.80} a \texttt{0.70} (o \texttt{alpha} a \texttt{0.025}) $\rightarrow$ pulsar \textbf{Ejecutar y Guardar Simulación}. Luego ir a \textbf{Historial}, pulsar \textbf{Recuperar} y después \textbf{Relanzar} para mostrar \textit{Coincidencia exacta ($\Delta_{\max}=0.00\text{e}+0$)}.
+    \item \textbf{Qué explicar:}
+    \begin{itemize}[noitemsep]
+        \item \textit{Numérico:} Contraste entre iterativos (Jacobi, Gauss-Seidel), directo (LU con pivoteo parcial) y Krylov (Gradiente Conjugado con validación SPD). En \textbf{MAL CONDICIONADO} ($\kappa_2 \approx 1.49\times 10^7$), una perturbación de $10^{-4}$ en $\mathbf{b}$ se amplifica $7\times 10^6\times$ en $\mathbf{x}$.
+        \item \textit{Problema:} Reducir \texttt{D\_umbral} adelanta el mes de inspección; además, la persistencia en PostgreSQL demuestra auditoría real fuera de memoria RAM.
+    \end{itemize}
+\end{itemize}
+\end{ficha}
+
+\begin{ficha}{3. Caleb Mendoza Calderon — Mención: Desarrollo de Software (Módulo 3)}
+\begin{itemize}[noitemsep]
+    \item \textbf{Aporte desde la mención:} Implementación en \texttt{float64} de los solvers lineales desde cero, módulo transversal \texttt{error\_metrics.py} (protegido contra división por cero con $\epsilon_{\text{mach}}=10^{-15}$) e interfaz web React/TypeScript con gráficos SVG propios.
+    \item \textbf{Acción en vivo:} Ir a \textbf{Mód. 3: Viento} $\rightarrow$ probar \textbf{MAL CONDICIONADO} (para mostrar la alerta en RK2 y estabilidad en RK4), y luego en \textbf{NORMAL} cambiar \texttt{omega} de \texttt{0.8} a \texttt{1.55} y \texttt{F0} de \texttt{150} a \texttt{400} $\rightarrow$ \textbf{Ejecutar y Guardar Simulación}.
+    \item \textbf{Qué explicar:}
+    \begin{itemize}[noitemsep]
+        \item \textit{Numérico:} En \textbf{MAL CONDICIONADO} ($k=450000$, $h=0.12\text{ s}$), RK2 excede su región de estabilidad explícita y falla en el paso 15, mientras RK4 se mantiene estable.
+        \item \textit{Problema:} Al acercar $\omega$ a la frecuencia natural $\omega_0 \approx 1.58\text{ rad/s}$, ocurre resonancia (crecen la amplitud y la energía $\int x^2 dt$); la explosión de RK2 en el caso rígido es inestabilidad numérica, no colapso físico.
+    \end{itemize}
+\end{itemize}
+\end{ficha}
+
+\begin{ficha}{4. Aaron Osvaldo Calzada Nina — Mención: Desarrollo de Software (Módulo 4)}
+\begin{itemize}[noitemsep]
+    \item \textbf{Aporte desde la mención:} Implementación desde cero de los motores de Raíces, Interpolación (Lagrange, Newton, Splines Cúbicos con algoritmo de Thomas), Integración (Trapecio, Simpson 1/3, Romberg) y EDO (RK2/RK4), junto con pruebas analíticas.
+    \item \textbf{Acción en vivo:} Ir a \textbf{Mód. 4: Sensores} $\rightarrow$ ejecutar \textbf{MAL CONDICIONADO} (Runge, $15$ nodos), y luego en \textbf{ESTRÉS} cambiar \texttt{ruido\_sigma} de \texttt{0.04} a \texttt{0.08} (o \texttt{n\_nodos} a \texttt{16}) $\rightarrow$ \textbf{Ejecutar y Guardar Simulación}.
+    \item \textbf{Qué explicar:}
+    \begin{itemize}[noitemsep]
+        \item \textit{Numérico:} En Runge, el polinomio global de Lagrange/Newton oscila en los extremos ($\text{RMSE}=109.22$), mientras Splines Cúbicos mantienen $\text{RMSE}=1.77\times 10^{-3}$. Bisección, Newton y Secante localizan el cruce de umbral sobre el spline.
+        \item \textit{Problema:} Los splines evitan falsas alarmas por oscilación polinomial al reconstruir paquetes perdidos; al aumentar \texttt{ruido\_sigma}, cualquier interpolación exacta copia también el ruido de medición.
+    \end{itemize}
+\end{itemize}
+\end{ficha}
+
+% ============================================================================
+\section{Tabla de Parámetros Editables para Estudiar y Probar en Vivo}
+% ============================================================================
+
+\begin{table}[h!]
+\centering
+\caption{Parámetros editables en la interfaz web, valores base y efecto esperado al modificarlos.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lllp{4.2cm}p{5.5cm}}
+\toprule
+\textbf{Módulo} & \textbf{Parámetro} & \textbf{Base (NORMAL)} & \textbf{Rango seguro de prueba} & \textbf{Efecto al modificarlo en la defensa} \\
+\midrule
+Mód. 1 & \texttt{v0} & \texttt{6.0} m/s & \texttt{4.0} -- \texttt{12.0} & Aumenta linealmente $t_{\text{det}}$ y cuadráticamente $x_{\text{det}}$. \\
+ & \texttt{a0} & \texttt{1.2} m/s$^2$ & \texttt{0.5} -- \texttt{2.5} & Menor $a_0$ alarga distancia y tiempo de frenado. \\
+ & \texttt{kd} & \texttt{0.0} s$^{-1}$ & \texttt{0.0} -- \texttt{0.1} & Introduce desaceleración exponencial no lineal. \\
+ & \texttt{h} & \texttt{0.05} s & \texttt{0.01} -- \texttt{0.5} & Subir \texttt{h} muestra ventaja de orden $O(h^4)$ de RK4 sobre RK2. \\
+\midrule
+Mód. 2 & \texttt{D0} & \texttt{0.12} & \texttt{0.05} -- \texttt{0.40} ($< D_{\text{umbral}}$) & Mayor desgaste inicial reduce el tiempo restante $t^*$. \\
+ & \texttt{alpha} & \texttt{0.015} & \texttt{0.005} -- \texttt{0.05} & Controla pendiente lineal de desgaste mensual. \\
+ & \texttt{beta} & \texttt{0.0008} & \texttt{0.0002} -- \texttt{0.005} & Mayor curvatura cuadrática acelera la llegada al umbral. \\
+ & \texttt{D\_umbral} & \texttt{0.80} & \texttt{0.50} -- \texttt{0.95} ($> D_0$) & Bajar el umbral exige inspección más temprana ($t^*$ menor). \\
+ & \texttt{tol} & \texttt{1e-8} & \texttt{1e-4} -- \texttt{1e-12} & Exige más iteraciones en Jacobi, Gauss-Seidel y CG. \\
+\midrule
+Mód. 3 & \texttt{m}, \texttt{c}, \texttt{k} & \texttt{1200, 480, 3000} & $m>0, c\ge 0, k>0$ & Subir \texttt{k} vuelve rígido al sistema; bajar \texttt{c} eleva amplitud. \\
+ & \texttt{F0}, \texttt{omega} & \texttt{150} N, \texttt{0.8} rad/s & \texttt{F0}: \texttt{0}--\texttt{900}; \texttt{omega}: \texttt{0.2}--\texttt{2.5} & Con $\omega \approx \sqrt{k/m}$ ocurre resonancia; \texttt{F0=0} da vibración libre. \\
+ & \texttt{h}, \texttt{T} & \texttt{0.02} s, \texttt{20.0} s & \texttt{h}: \texttt{0.005}--\texttt{0.2}; \texttt{T}: \texttt{5}--\texttt{120} & Pasos grandes en \texttt{k} alto causan inestabilidad explícita en RK2. \\
+\midrule
+Mód. 4 & \texttt{n\_nodos} & \texttt{8} & \texttt{6} -- \texttt{20} & Más nodos equiespaciados agravan Runge en Lagrange/Newton. \\
+ & \texttt{ruido\_sigma} & \texttt{0.0} & \texttt{0.0} -- \texttt{0.10} & Mayor ruido aumenta el RMSE en todos los interpoladores exactos. \\
+ & \texttt{umbral\_alerta} & \texttt{0.75} & Dentro de $[\min y, \max y]$ & Cambia el instante $t_{\text{cruce}}$ detectado por las raíces del spline. \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+% ============================================================================
+\section{Banco de Preguntas del Tribunal y Respuestas Modelo}
+% ============================================================================
+\begin{enumerate}
+    \item \textbf{¿Cuál es la diferencia entre mal condicionamiento y falta de convergencia?}\\
+    El \textit{mal condicionamiento} es una propiedad intrínseca del problema ($\kappa_2(A)$ elevado, raíz múltiple o fenómeno de Runge): incluso un método directo exacto como LU amplifica pequeños errores de entrada $\delta\mathbf{b}$ hacia $\mathbf{x}$. La \textit{falta de convergencia} es un fallo de un algoritmo iterativo (ej. Jacobi cuando $\rho(T_J)\ge 1$, o Bisección sin cambio de signo).
+
+    \item \textbf{¿Por qué Gradiente Conjugado exige validar que la matriz sea SPD?}\\
+    Porque minimiza $\frac{1}{2}\mathbf{x}^T A\mathbf{x} - \mathbf{b}^T\mathbf{x}$, que solo tiene un mínimo único y direcciones $A$-conjugadas reales si $A=A^T$ y todos sus eigenvalores son estrictamente positivos. Por ello el código lanza \texttt{NonSPDError} si no se cumple.
+
+    \item \textbf{¿Cómo evitan la división por cero en la teoría de errores?}\\
+    En \texttt{error\_metrics.py}, cuando $|v_{\text{ref}}| < \epsilon_{\text{mach}} = 10^{-15}$, el denominador del error relativo se protege usando $\max(|v_{\text{ref}}|, 10^{-15})$.
+
+    \item \textbf{¿Qué aporta Romberg frente al Trapecio simple?}\\
+    Aplica extrapolación de Richardson ($R_{i,j}$) sobre mallas refinadas a la mitad ($h, h/2, h/4\dots$), cancelando progresivamente los términos de error de orden $O(h^2), O(h^4), O(h^6)\dots$ y logrando altísima precisión con pocas evaluaciones.
+
+    \item \textbf{¿Por qué en el Módulo 3 \texttt{MAL CONDICIONADO} explota RK2 y RK4 sobrevive?}\\
+    Porque para $k=450000\text{ N/m}$ y $h=0.12\text{ s}$ ($h\omega_0 \approx 2.32$), el paso temporal excede la región de estabilidad absoluta de RK2 explícito, mientras queda dentro de la región más amplia de RK4.
+
+    \item \textbf{¿Cómo prueban que la persistencia es real y no en memoria RAM?}\\
+    Las 6 tablas viven en PostgreSQL (Neon en Vercel y Docker en local). En \textbf{Historial}, \textbf{Recuperar} reconstruye parámetros, tablas y gráficos desde BD, y \textbf{Relanzar} vuelve a ejecutar verificando coincidencia exacta ($\Delta_{\max} = 0.0$).
+\end{enumerate}
+
+% ============================================================================
+\section{Checklist de 10 Minutos Antes de la Defensa}
+% ============================================================================
+\begin{itemize}[noitemsep]
+    \item Abrir \url{https://simtele-risk-peach.vercel.app/} y confirmar en el encabezado \texttt{BD: postgresql}.
+    \item Cargar la pestaña \textbf{Comparación 4$\times$3} para verificar que los 12 escenarios responden en milisegundos.
+    \item Tener a mano \texttt{docs/informe\_final.pdf}, el enlace de GitHub y las credenciales de Neon/Vercel en caso de consulta.
+\end{itemize}
+
+\end{document}
